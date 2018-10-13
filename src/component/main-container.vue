@@ -1,8 +1,8 @@
 <template>
-    <div>
-        <md-header @openSide="collapsedSider"/>
-        <md-sider v-bind:drawer.sync="drawer" :list="sideList"/>
-        <md-list :list="todoList"/>
+    <div style="height: 100%;">
+        <md-sider v-bind:drawer.sync="drawer" :list="sideList" @changeCatalog="setCatalog"/>
+        <md-header :title="title" @openSide="collapsedSider"/>
+        <md-list :list="todoList" @createTodo="setNewTodo"/>
     </div>
 </template>
 <script>
@@ -16,36 +16,38 @@
         components: {MdList, MdSider, MdHeader},
         data() {
             return {
+                title: null,
+                todoList: null,
                 drawer: null,
                 sideList: [{
-                    type:'title',
-                    label:'普通分类'
-                },{
+                    type: 'title',
+                    label: '普通分类'
+                }, {
                     icon: 'move_to_inbox',
-                    label: '归档'
-                },{
+                    label: '归档',
+                    path: '/apis/document.json'
+                }, {
                     icon: 'star',
-                    label: '收藏'
-                },{
+                    label: '收藏',
+                    path: '/apis/marked.json'
+                }, {
                     icon: 'email',
-                    label: '日记'
-                },{
+                    label: '日记',
+                    path: '/apis/jenoral.json'
+                }, {
                     icon: 'backup',
-                    label: '云端'
-                },{
-                    type:'title',
-                    label:'自定义列表'
-                },{
-                    icon:'book',
-                    label:'草稿'
-                },{
-                    icon:'format_list_bulleted',
-                    label:'自定义列表1'
-                }],
-                todoList:[{
-                    label:'第一条',
-                    prefix:'今日',
-                    content:'哦吼吼吼吼吼吼吼吼吼吼吼吼吼吼吼吼吼吼'
+                    label: '云端',
+                    path: '/apis/cloud.json'
+                }, {
+                    type: 'title',
+                    label: '自定义列表'
+                }, {
+                    icon: 'book',
+                    label: '草稿',
+                    path: '/apis/draft.json'
+                }, {
+                    icon: 'format_list_bulleted',
+                    label: '自定义列表1'
                 }]
             };
         },
@@ -67,7 +69,27 @@
             collapsedSider() {
                 console.log('click open side menu');
                 this.drawer.toggle();
+            },
+            setNewTodo(str) {
+                console.log('set new todo list event', str);
+                this.todoList.push({
+                    label: str,
+                    favorite: false
+                })
+            },
+            setCatalog(path) {
+                this.title = null;
+                this.todoList = null;
+                fetch(path).then(e => e.json()).then(e => {
+                    setTimeout(() =>{
+                        this.title = e.title;
+                        this.todoList = e.todoList;
+                    },1000);
+                })
             }
+        },
+        mounted() {
+            this.setCatalog('/apis/draft.json');
         }
     }
 </script>

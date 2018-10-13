@@ -3,7 +3,7 @@
         <ul class="mdui-list">
             <template v-for="(item,index) in list">
                 <li class="mdui-subheader" v-if="item.type==='title'">{{item.label}}</li>
-                <li class="mdui-list-item mdui-ripple" v-else>
+                <li class="mdui-list-item mdui-ripple" v-else @click="changeCatalog(item.path)">
                     <i class="mdui-list-item-icon mdui-icon material-icons">{{item.icon}}</i>
                     <div class="mdui-list-item-content">{{item.label}}</div>
                 </li>
@@ -17,15 +17,19 @@
 
     export default {
         name: "md-sider",
-        props:['drawer','list'],
-        data(){
-            return {
-
-            }
+        props: ['drawer', 'list'],
+        data() {
+            return {}
         },
         mounted() {
-            let drawer = new mdui.Drawer('#drawer',{swipe: true});
+            let drawer = new mdui.Drawer('#drawer', {swipe: true});
             this.$emit('update:drawer', drawer);
+        },
+        methods: {
+            changeCatalog(path) {
+                if (!path) return;
+                this.$emit('changeCatalog',path);
+            }
         }
     }
 </script>
