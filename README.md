@@ -1,18 +1,19 @@
-# todo
+## 清单分发系统
 
-> A Vue.js project
+老师统一制作课程每周ToDo List，然后分发给学生。学生完成后相应任务打勾，老师可进行统计查看以支持下一步决策，系统可自动根据学生完成情况发送相关支撑材料（比如链接、文档）发送给学生。进阶：要求Todo List中的某个任务可以有子任务。
+网页版
+小程序版
+手机客户端版
+参考资料：<https://todo.microsoft.com/zh-cn>
 
-## Build Setup
+要求有码云的运用，包括选题的确定（NABCD），需求分析报告，开发过程报告，测试报告，用户反馈报告，项目总结报告。
 
-``` bash
-# install dependencies
-npm install
+其实我本来就打算写这个233
 
-# serve with hot reload at localhost:8080
-npm run dev
+## 需求分析报告
 
-# build for production with minification
-npm run build
-```
-
-For detailed explanation on how things work, consult the [docs for vue-loader](http://vuejs.github.io/vue-loader).
+1. 用户是老师和学生
+2. 基本的打勾确认
+3. 完成时的通知
+4. 类似群投票？
+5. 
