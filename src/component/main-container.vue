@@ -2,7 +2,7 @@
     <div style="height: 100%;">
         <md-sider v-bind:drawer.sync="drawer" :list="sideList" @changeCatalog="setCatalog"/>
         <md-header :title="title" @openSide="collapsedSider" :loading="loading.header"/>
-        <md-list :list="todoList" @createTodo="setNewTodo"/>
+        <md-list :list="todoList" @createTodo="setNewTodo" :is-expand="true" placeholder="添加新的待做事项"/>
     </div>
 </template>
 <script>
@@ -48,6 +48,30 @@
                     icon: 'book',
                     label: '草稿',
                     path: '/apis/draft.json'
+                }, {
+                    icon: 'format_list_bulleted',
+                    label: '自定义列表1'
+                }, {
+                    icon: 'format_list_bulleted',
+                    label: '自定义列表1'
+                }, {
+                    icon: 'format_list_bulleted',
+                    label: '自定义列表1'
+                }, {
+                    icon: 'format_list_bulleted',
+                    label: '自定义列表1'
+                }, {
+                    icon: 'format_list_bulleted',
+                    label: '自定义列表1'
+                }, {
+                    icon: 'format_list_bulleted',
+                    label: '自定义列表1'
+                }, {
+                    icon: 'format_list_bulleted',
+                    label: '自定义列表1'
+                }, {
+                    icon: 'format_list_bulleted',
+                    label: '自定义列表1'
                 }, {
                     icon: 'format_list_bulleted',
                     label: '自定义列表1'

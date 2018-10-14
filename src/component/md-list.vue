@@ -1,13 +1,14 @@
 <template>
-    <ul class="mdui-list">
-            <template v-for="(item,index) in list">
-                <md-line :item="item" @click="expandTodo(index)">
-                    <a slot="right" href="javascript:;" class="mdui-btn mdui-btn-icon mdui-ripple" @click="markFavorite(item,index)">
-                        <i class="mdui-icon material-icons">{{changeStar(item)}}</i>
-                    </a>
-                </md-line>
-                <md-line type="separate"/>
-            </template>
+    <ul class="mdui-list" ref="body">
+        <template v-for="(item,index) in list">
+            <md-line :item.sync="item" @click="expandTodo(index)" :expand="isExpand">
+                <a slot="right" href="javascript:;" class="mdui-btn mdui-btn-icon mdui-ripple"
+                   @click="markFavorite(item,index)">
+                    <i class="mdui-icon material-icons">{{changeStar(item)}}</i>
+                </a>
+            </md-line>
+            <md-line type="separate"/>
+        </template>
         <li class="mdui-list-item mdui-ripple">
             <label class="mdui-radio" v-show="create">
                 <input type="radio" name="group1"/>
@@ -17,7 +18,7 @@
                 <i class="mdui-icon material-icons">add</i>
             </label>
             <div class="mdui-list-item-content" style="margin-left: 0" @click="createNewTodo">
-                <div class="mdui-list-item-title" v-show="!create">添加新的待做事项</div>
+                <div class="mdui-list-item-title" v-show="!create">{{placeholder}}</div>
                 <div class="mdui-textfield" v-show="create">
                     <input class="mdui-textfield-input" @blur="addTodo" id="newTodoArea" placeholder="标题"/>
                 </div>
@@ -33,10 +34,11 @@
     export default {
         name: "md-list",
         components: {MdLine},
-        props: ['list'],
+        props: ['list','isExpand','placeholder'],
         data() {
             return {
-                create: null
+                create: null,
+                body: null
             }
         },
         methods: {
@@ -56,28 +58,23 @@
                 this.create = null;
             },
             expandTodo(index) {
-                // let li = document.getElementById('todoList');
-                // let target = {};
-                // target.elm = li.children[index];
-                // target.classList = target.elm.classList;
-                // target.body = target.elm.getElementsByClassName('mdui-panel-item-body')[0];
-                // if (target.classList.contains('mdui-panel-item-open')) {
-                //     target.classList.remove('mdui-panel-item-open');
-                // }
-                // else {
-                //     target.classList.add('mdui-panel-item-open');
-                // }
+                console.log('md list expand', index);
+                // setTimeout(() => {
+                //     this.body.toggle(index);
+                // },10000);
             },
-            markFavorite(item){
-                console.log('mark favorite',item);
+            markFavorite(item) {
+                console.log('mark favorite', item);
                 item.favorite = !item.favorite;
             },
-            changeStar(item){
-                return item.favorite?'star':'star_border';
+            changeStar(item) {
+                return item.favorite ? 'star' : 'star_border';
             }
         },
-        computed:{
-
+        computed: {},
+        mounted() {
+            console.log('md list refs',this.$refs);
+            this.body = new mdui.Collapse(this.$refs.body);
         }
     }
 </script>

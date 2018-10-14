@@ -3,6 +3,10 @@ import VueRouter from 'vue-router';
 import App from './App';
 import Routers from './router.js';
 import 'mdui/dist/css/mdui.css';
+//解决循环引用组件报错
+import MdList from "./component/md-list";
+Vue.component('md-list', MdList);
+
 
 Vue.use(VueRouter);
 

@@ -21,7 +21,7 @@
                 </a>
             </div>
         </div>
-        <div class="loading mdui-overlay mdui-overlay-show" v-show="loading">
+        <div class="loading curtain" :class="{'curtain-show':loading}">
             <div class="mdui-spinner mdui-spinner-colorful"></div>
         </div>
     </div>
@@ -32,7 +32,7 @@
 
     export default {
         name: "md-header",
-        props: ['title','loading'],
+        props: ['title', 'loading'],
         mounted() {
             mdui.mutation();
         }
@@ -81,9 +81,28 @@
         justify-content: center;
         align-items: center;
         width: 100%;
+        height: 100%;
+    }
+
+    .curtain-show {
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .curtain {
         position: absolute;
         top: 0;
         left: 0;
-        height: 100%;
+        z-index: 2000;
+        visibility: hidden;
+        background: rgba(0, 0, 0, .4);
+        opacity: 0;
+        -webkit-transition-duration: .3s;
+        transition-duration: .3s;
+        -webkit-transition-property: opacity, visibility;
+        transition-property: opacity, visibility;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        will-change: opacity;
     }
 </style>
