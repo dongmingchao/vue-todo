@@ -27,6 +27,7 @@
         },
         methods: {
             changeCatalog(path) {
+                if (window.screen.availWidth < 1024) this.drawer.close();
                 if (!path) return;
                 this.$emit('changeCatalog',path);
             }

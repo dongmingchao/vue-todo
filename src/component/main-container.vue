@@ -1,7 +1,7 @@
 <template>
     <div style="height: 100%;">
         <md-sider v-bind:drawer.sync="drawer" :list="sideList" @changeCatalog="setCatalog"/>
-        <md-header :title="title" @openSide="collapsedSider"/>
+        <md-header :title="title" @openSide="collapsedSider" :loading="loading.header"/>
         <md-list :list="todoList" @createTodo="setNewTodo"/>
     </div>
 </template>
@@ -16,6 +16,9 @@
         components: {MdList, MdSider, MdHeader},
         data() {
             return {
+                loading:{
+                    header: true
+                },
                 title: null,
                 todoList: null,
                 drawer: null,
@@ -78,18 +81,18 @@
                 })
             },
             setCatalog(path) {
-                this.title = null;
-                this.todoList = null;
+                this.loading.header = true;
                 fetch(path).then(e => e.json()).then(e => {
                     setTimeout(() =>{
                         this.title = e.title;
                         this.todoList = e.todoList;
+                        this.loading.header = false;
                     },1000);
                 })
             }
         },
         mounted() {
-            this.setCatalog('/apis/draft.json');
+            // this.setCatalog('/apis/draft.json');
         }
     }
 </script>
