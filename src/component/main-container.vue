@@ -28,26 +28,26 @@
                 }, {
                     icon: 'move_to_inbox',
                     label: '归档',
-                    path: '/apis/document.json'
+                    path: './apis/document.json'
                 }, {
                     icon: 'star',
                     label: '收藏',
-                    path: '/apis/marked.json'
+                    path: './apis/marked.json'
                 }, {
                     icon: 'email',
                     label: '日记',
-                    path: '/apis/jenoral.json'
+                    path: './apis/jenoral.json'
                 }, {
                     icon: 'backup',
                     label: '云端',
-                    path: '/apis/cloud.json'
+                    path: './apis/cloud.json'
                 }, {
                     type: 'title',
                     label: '自定义列表'
                 }, {
                     icon: 'book',
                     label: '草稿',
-                    path: '/apis/draft.json'
+                    path: './apis/draft.json'
                 }, {
                     icon: 'format_list_bulleted',
                     label: '自定义列表1'
