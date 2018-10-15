@@ -1,30 +1,26 @@
 <template>
-    <ul class="mdui-list" ref="body">
+    <mu-list textline="two-line" nested-indent>
         <template v-for="(item,index) in list">
             <md-line :item.sync="item" @click="expandTodo(index)" :expand="isExpand">
-                <a slot="right" href="javascript:;" class="mdui-btn mdui-btn-icon mdui-ripple"
-                   @click="markFavorite(item,index)">
-                    <i class="mdui-icon material-icons">{{changeStar(item)}}</i>
-                </a>
+                <!--<a slot="right" href="javascript:;" class="mdui-btn mdui-btn-icon mdui-ripple"-->
+                   <!--@click="markFavorite(item,index)">-->
+                    <!--<i class="mdui-icon material-icons">{{changeStar(item)}}</i>-->
+                <!--</a>-->
             </md-line>
-            <md-line type="separate"/>
+            <mu-divider></mu-divider>
         </template>
-        <li class="mdui-list-item mdui-ripple">
-            <label class="mdui-radio" v-show="create">
-                <input type="radio" name="group1"/>
-                <i class="mdui-radio-icon"></i>
-            </label>
-            <label style="width: 36px;height: 36px;line-height: 36px;" v-show="!create">
+        <mu-list-item>
+            <mu-list-item-action>
                 <i class="mdui-icon material-icons">add</i>
-            </label>
+            </mu-list-item-action>
             <div class="mdui-list-item-content" style="margin-left: 0" @click="createNewTodo">
                 <div class="mdui-list-item-title" v-show="!create">{{placeholder}}</div>
                 <div class="mdui-textfield" v-show="create">
                     <input class="mdui-textfield-input" @blur="addTodo" id="newTodoArea" placeholder="标题"/>
                 </div>
             </div>
-        </li>
-    </ul>
+        </mu-list-item>
+    </mu-list>
 </template>
 
 <script>
@@ -38,7 +34,8 @@
         data() {
             return {
                 create: null,
-                body: null
+                open:'send'
+                // body: null
             }
         },
         methods: {
@@ -73,12 +70,14 @@
         },
         computed: {},
         mounted() {
-            console.log('md list refs',this.$refs);
-            this.body = new mdui.Collapse(this.$refs.body);
+            // console.log('md list refs',this.$refs);
+            // this.body = new mdui.Collapse(this.$refs.body);
         }
     }
 </script>
 
 <style scoped>
-
+    .mu-list .mu-list{
+        margin-left: 34px;
+    }
 </style>

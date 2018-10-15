@@ -17,9 +17,7 @@
 </script>
 
 <style>
-    /*body{*/
-        /*position: absolute;*/
-        /*height: 100%;*/
-        /*width: 100%;*/
-    /*}*/
+    .mu-ripple-wrapper {
+        pointer-events: none;
+    }
 </style>

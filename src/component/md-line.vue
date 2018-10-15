@@ -1,54 +1,62 @@
 <template>
-    <li class="mdui-divider-inset mdui-m-y-0" style="margin-left: 53px" v-if="type==='separate'"></li>
-    <li class="mdui-collapse-item" v-else>
-        <div class="mdui-collapse-item-header mdui-list-item mdui-ripple" style="width: 100%">
-            <label class="mdui-checkbox">
-                <input type="checkbox" @change="check"/>
-                <i class="mdui-checkbox-icon"></i>
-            </label>
-            <div class="mdui-list-item-content" @click="clickBody">
-                <div class="mdui-list-item-title" style="text-overflow: ellipsis;overflow: hidden">{{item.label}}</div>
-                <div class="mdui-list-item-text mdui-list-item-one-line" style="display: block;"
-                     v-if="item.content||item.prefix">
-                    <span class="mdui-text-color-theme-text" v-if="item.prefix">{{item.prefix}}</span>
-                    {{item.content?item.content:null}}
-                </div>
-            </div>
-            <slot name="right"/>
-        </div>
-        <div class="mdui-collapse-item-body">
-            <div v-if="expand">
-                <md-list :list="item.steps"
-                         :is-expand="false"
-                         placeholder="添加新的步骤"
-                         @createTodo="setNewTodo"/>
-                <div class="mdui-list-item detail-setting">
-                    <div class="mdui-textfield mdui-textfield-floating-label">
-                        <label class="mdui-textfield-label">设定闹钟</label>
-                        <input class="mdui-textfield-input"/>
-                    </div>
-                    <!--<div style="display: inline-block">-->
-                    <div class="mdui-textfield mdui-textfield-floating-label">
-                        <label class="mdui-textfield-label">添加相关时间</label>
-                        <input class="mdui-textfield-input"/>
-                    </div>
-                    <!--</div>-->
-                    <!--<div style="display: inline-block">-->
-                    <div class="mdui-textfield mdui-textfield-floating-label">
-                        <label class="mdui-textfield-label">设置重复</label>
-                        <input class="mdui-textfield-input"/>
-                    </div>
-                </div>
-                <!--</div>-->
-                <div class="mdui-list-item">
-                    <div class="mdui-textfield mdui-textfield-floating-label">
-                        <label class="mdui-textfield-label">添加笔记</label>
-                        <textarea class="mdui-textfield-input"></textarea>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </li>
+    <mu-list-item :nested="open" button>
+        <mu-list-item-action>
+            <mu-checkbox v-model="item.checked" @change="check"></mu-checkbox>
+        </mu-list-item-action>
+        <mu-list-item-content @click="clickBody">
+            <mu-list-item-title>
+                {{item.label}}
+            </mu-list-item-title>
+            <mu-list-item-sub-title style="color: rgba(0, 0, 0, .87)" v-if="item.prefix">
+                {{item.prefix}}
+            </mu-list-item-sub-title>
+            <mu-list-item-sub-title v-if="item.content">
+                {{item.content?item.content:null}}
+            </mu-list-item-sub-title>
+        </mu-list-item-content>
+        <mu-list-item-action>
+            <mu-list-item-after-text>15 min</mu-list-item-after-text>
+            <mu-checkbox color="yellow700" v-model="selects" value="value1" uncheck-icon="star_border"
+                         checked-icon="star"></mu-checkbox>
+        </mu-list-item-action>
+        <!--<slot name="right"/>-->
+        <md-list :list="item.steps"
+                 slot="nested"
+                 :is-expand="false"
+                 placeholder="添加新的步骤"
+                 @createTodo="setNewTodo"/>
+        <mu-list-item slot="nested" button>
+            <mu-date-input icon="access_alarm"
+                           landscape
+                           v-model="time"
+                           label="设定闹钟"
+                           type="time" label-float full-width></mu-date-input>
+        </mu-list-item>
+        <mu-list-item slot="nested" button>
+            <mu-date-input v-model="date"
+                           icon="today"
+                           label="添加相关时间"
+                           label-float full-width no-display></mu-date-input>
+        </mu-list-item>
+        <mu-list-item slot="nested" button>
+            <mu-select label="设置重复" icon="today" v-model="repeats" full-width label-float>
+                <mu-option v-for="language,index in languages" avatar :key="language" :label="language"
+                           :value="language">
+                    <mu-list-item-action avatar>
+                        <mu-avatar :size="36" color="primary">
+                            {{language.substring(0, 1)}}
+                        </mu-avatar>
+                    </mu-list-item-action>
+                    <mu-list-item-content>
+                        <mu-list-item-title>{{language}}</mu-list-item-title>
+                    </mu-list-item-content>
+                </mu-option>
+            </mu-select>
+        </mu-list-item>
+        <mu-list-item slot="nested" button>
+            <mu-text-field icon="note" v-model="note" label="添加笔记" label-float multi-line></mu-text-field>
+        </mu-list-item>
+    </mu-list-item>
 </template>
 
 <script>
@@ -59,11 +67,21 @@
         components: {},
         props: ['item', 'type', 'expand'],
         data() {
-            return {}
+            return {
+                date: null,
+                time: null,
+                repeats: null,
+                languages: ['C', 'Java'],
+                note: null,
+
+                open: false,
+                selects: []
+            }
         },
         methods: {
             clickBody(e) {
                 console.log('click todo line body', e);
+                this.open = !this.open;
                 this.$emit('click', e);
             },
             check(e) {
@@ -81,6 +99,10 @@
                     label: str,
                     favorite: false
                 })
+            },
+            toggle(val) {
+                console.log('list item toggle', val);
+                // this.open = false;
             }
         },
         mounted() {
@@ -99,7 +121,7 @@
         width: 0;
     }
 
-    .detail-setting > div {
-        display: inline-block;
-    }
+    /*.detail-setting > div {*/
+    /*display: inline-block;*/
+    /*}*/
 </style>
