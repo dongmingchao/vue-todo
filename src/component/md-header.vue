@@ -2,7 +2,7 @@
     <div class="mdui-appbar background">
         <div v-if="title" class="mdui-card">
             <div class="mdui-card-media">
-                <img src="../assets/card.jpg" class="background"/>
+                <img src="https://timgsa.baidu.com/timg?image&quality=80&size=b10000_10000&sec=1540272981&di=e4d3061b4d431202c53bcd3357a74f86&imgtype=jpg&src=http%3A%2F%2Fimg6.bdstatic.com%2Fimg%2Fimage%2Fpublic%2Fzhaojianbo.jpg" class="background"/>
                 <div class="mdui-card-media-covered mdui-card-media-covered-transparent">
                     <div class="mdui-card-primary">
                         <div class="mdui-card-primary-title">{{title.title}}</div>
