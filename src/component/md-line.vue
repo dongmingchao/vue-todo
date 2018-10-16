@@ -1,5 +1,5 @@
 <template>
-    <mu-list-item :nested="open" button>
+    <mu-list-item :nested="expand" :open="open" button>
         <mu-list-item-action>
             <mu-checkbox v-model="item.checked" @change="check"></mu-checkbox>
         </mu-list-item-action>
@@ -27,7 +27,6 @@
                  @createTodo="setNewTodo"/>
         <mu-list-item slot="nested" button>
             <mu-date-input icon="access_alarm"
-                           landscape
                            v-model="time"
                            label="设定闹钟"
                            type="time" label-float full-width></mu-date-input>
@@ -54,7 +53,7 @@
             </mu-select>
         </mu-list-item>
         <mu-list-item slot="nested" button>
-            <mu-text-field icon="note" v-model="note" label="添加笔记" label-float multi-line></mu-text-field>
+            <mu-text-field icon="note" v-model="note" label="添加笔记" label-float multi-line :rows="3"></mu-text-field>
         </mu-list-item>
     </mu-list-item>
 </template>

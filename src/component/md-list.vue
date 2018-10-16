@@ -1,12 +1,7 @@
 <template>
     <mu-list textline="two-line" nested-indent>
         <template v-for="(item,index) in list">
-            <md-line :item.sync="item" @click="expandTodo(index)" :expand="isExpand">
-                <!--<a slot="right" href="javascript:;" class="mdui-btn mdui-btn-icon mdui-ripple"-->
-                   <!--@click="markFavorite(item,index)">-->
-                    <!--<i class="mdui-icon material-icons">{{changeStar(item)}}</i>-->
-                <!--</a>-->
-            </md-line>
+            <md-line :item.sync="item" @click="expandTodo(index)" :expand="isExpand"/>
             <mu-divider></mu-divider>
         </template>
         <mu-list-item>
