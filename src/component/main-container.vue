@@ -2,7 +2,7 @@
     <div style="height: 100%;">
         <md-sider v-bind:drawer.sync="drawer" :list="sideList" @changeCatalog="setCatalog"/>
         <md-header :title="title" @openSide="collapsedSider" :loading="loading.header"/>
-        <md-list :list="todoList" @createTodo="setNewTodo" :is-expand="true" placeholder="添加新的待做事项"/>
+        <md-list class="main-list" :list="todoList" @createTodo="setNewTodo" :is-expand="true" placeholder="添加新的待做事项"/>
     </div>
 </template>
 <script>
@@ -121,5 +121,13 @@
     }
 </script>
 <style scoped>
-
+    .main-list{
+        height: calc(100% - 10rem);
+        position: absolute;
+    }
+    @media (min-width: 1023px) {
+        .main-list {
+            width: calc(100% - 240px);
+        }
+    }
 </style>
