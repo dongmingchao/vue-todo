@@ -1,4 +1,5 @@
 ## 清单分发系统
+[![Build Status](https://travis-ci.com/dongmingchao/vue-todo.svg?branch=master)](https://travis-ci.com/dongmingchao/vue-todo)
 
 老师统一制作课程每周ToDo List，然后分发给学生。学生完成后相应任务打勾，老师可进行统计查看以支持下一步决策，系统可自动根据学生完成情况发送相关支撑材料（比如链接、文档）发送给学生。进阶：要求Todo List中的某个任务可以有子任务。
 网页版
