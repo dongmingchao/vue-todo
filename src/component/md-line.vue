@@ -53,7 +53,7 @@
             </mu-select>
         </mu-list-item>
         <mu-list-item slot="nested" button>
-            <mu-text-field icon="note" v-model="note" label="添加笔记" label-float multi-line :rows="3"></mu-text-field>
+            <mu-text-field icon="note" v-model="note" label="添加笔记" label-float multi-line :rows="3" full-width></mu-text-field>
         </mu-list-item>
     </mu-list-item>
 </template>
@@ -89,10 +89,11 @@
             },
             setNewTodo(str) {
                 let item = this.item;
-                console.log('set new todo list event', str);
+                console.log('set new todo step event', str);
                 if (typeof item.steps === 'undefined') {
                     item.steps = [];
                     this.$emit('update:item', item);
+                    this.$forceUpdate();
                 }
                 item.steps.push({
                     label: str,

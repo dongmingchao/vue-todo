@@ -73,6 +73,6 @@
 
 <style scoped>
     .mu-list .mu-list{
-        margin-left: 34px;
+        padding-left: 34px;
     }
 </style>
