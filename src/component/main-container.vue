@@ -10,13 +10,14 @@
     import MdHeader from "./md-header";
     import MdSider from "./md-sider";
     import MdList from "./md-list";
+    import io from '../lib/io';
 
     export default {
         name: 'main-container',
         components: {MdList, MdSider, MdHeader},
         data() {
             return {
-                loading:{
+                loading: {
                     header: true
                 },
                 title: null,
@@ -28,26 +29,31 @@
                 }, {
                     icon: 'move_to_inbox',
                     label: '归档',
-                    path: './apis/document.json'
+                    path: './apis/document.json',
+                    prop: 'document'
                 }, {
                     icon: 'star',
                     label: '收藏',
-                    path: './apis/marked.json'
+                    path: './apis/marked.json',
+                    prop: 'marked'
                 }, {
                     icon: 'email',
                     label: '日记',
-                    path: './apis/jenoral.json'
+                    path: './apis/diary.json',
+                    prop: 'diary'
                 }, {
                     icon: 'backup',
                     label: '云端',
-                    path: './apis/cloud.json'
+                    path: './apis/cloud.json',
+                    prop: 'cloud'
                 }, {
                     type: 'title',
                     label: '自定义列表'
                 }, {
                     icon: 'book',
                     label: '草稿',
-                    path: './apis/draft.json'
+                    path: './apis/draft.json',
+                    prop: 'draft'
                 }, {
                     icon: 'format_list_bulleted',
                     label: '自定义列表1'
@@ -104,15 +110,17 @@
                     favorite: false
                 })
             },
-            setCatalog(path) {
+            async setCatalog(item) {
                 this.loading.header = true;
-                fetch(path).then(e => e.json()).then(e => {
-                    setTimeout(() =>{
-                        this.title = e.title;
-                        this.todoList = e.todoList;
-                        this.loading.header = false;
-                    },1000);
-                })
+                let local = await io.fetchObj(item.prop);
+                if (local === null) {
+                    local = await io.fetch(item.path);
+                    console.log('request new value', local);
+                    if (typeof item.prop !== 'undefined') io.save(item.prop, local.data);
+                }
+                this.title = local.data.title;
+                this.todoList = local.data.todoList;
+                this.loading.header = false;
             }
         },
         mounted() {
@@ -121,10 +129,11 @@
     }
 </script>
 <style scoped>
-    .main-list{
+    .main-list {
         height: calc(100% - 10rem);
         position: absolute;
     }
+
     @media (min-width: 1023px) {
         .main-list {
             width: calc(100% - 240px);

@@ -3,7 +3,7 @@
         <ul class="mdui-list">
             <template v-for="(item,index) in list">
                 <li class="mdui-subheader" v-if="item.type==='title'">{{item.label}}</li>
-                <li class="mdui-list-item mdui-ripple" v-else @click="changeCatalog(item.path)">
+                <li class="mdui-list-item mdui-ripple" v-else @click="changeCatalog(item)">
                     <i class="mdui-list-item-icon mdui-icon material-icons">{{item.icon}}</i>
                     <div class="mdui-list-item-content">{{item.label}}</div>
                 </li>
@@ -26,10 +26,10 @@
             this.$emit('update:drawer', drawer);
         },
         methods: {
-            changeCatalog(path) {
+            changeCatalog(item) {
                 if (window.screen.availWidth < 1024) this.drawer.close();
-                if (!path) return;
-                this.$emit('changeCatalog',path);
+                if (!item.path) return;
+                this.$emit('changeCatalog', item);
             }
         }
     }
