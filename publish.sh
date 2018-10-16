@@ -5,7 +5,6 @@ mkdir output
 cp index.html output/
 cp -r dist output/
 cp -r apis output/
-cp -r assets output/
 
 cd output || exit 1 # abort script if folder does not exists
 git init
