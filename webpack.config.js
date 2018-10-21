@@ -1,5 +1,7 @@
-var path = require('path')
-var webpack = require('webpack')
+const path = require('path');
+const fs = require('fs');
+const webpack = require('webpack');
+const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
 
 module.exports = {
     entry: './src/main.js',
@@ -75,16 +77,32 @@ module.exports = {
     devServer: {
         historyApiFallback: true,
         noInfo: true,
-        overlay: true
+        overlay: true,
+        before: function (app) {
+            app.get('/service-worker.js', function (req, res) {
+                res.set({ 'Content-Type': 'application/javascript; charset=utf-8' });
+                res.send(fs.readFileSync('dist/service-worker.js'));
+            });
+        }
     },
     performance: {
         hints: false
     },
-    devtool: '#eval-source-map'
-}
+    devtool: '#eval-source-map',
+    plugins:[
+        // service worker caching
+        new SWPrecacheWebpackPlugin({
+            cacheId: 'my-vue-app',
+            filename: 'service-worker.js',
+            staticFileGlobs: ['dist/**/*.{js,html,css}'],
+            minify: true,
+            stripPrefix: '/dist/'
+        })
+    ]
+};
 
 if (process.env.NODE_ENV === 'production') {
-    module.exports.devtool = '#source-map'
+    module.exports.devtool = '#source-map';
     // http://vue-loader.vuejs.org/en/workflow/production.html
     module.exports.plugins = (module.exports.plugins || []).concat([
         new webpack.DefinePlugin({

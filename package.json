@@ -13,6 +13,7 @@
     "localforage": "^1.7.2",
     "mdui": "^0.4.1",
     "muse-ui": "^3.0.1",
+    "sw-precache-webpack-plugin": "^0.11.5",
     "vue": "^2.5.11",
     "vue-router": "^3.0.1"
   },
