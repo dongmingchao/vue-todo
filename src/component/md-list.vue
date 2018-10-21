@@ -1,7 +1,10 @@
 <template>
     <mu-list textline="two-line" nested-indent>
         <template v-for="(item,index) in list">
-            <md-line :item.sync="item" @click="expandTodo(index)" :expand="isExpand"/>
+            <md-line :item.sync="item"
+                     @settle="(prop,value) => packChange(prop,value,index)"
+                     @click="expandTodo(index)"
+                     :expand="isExpand"/>
             <mu-divider></mu-divider>
         </template>
         <mu-list-item>
@@ -25,11 +28,11 @@
     export default {
         name: "md-list",
         components: {MdLine},
-        props: ['list','isExpand','placeholder'],
+        props: ['list', 'isExpand', 'placeholder'],
         data() {
             return {
                 create: null,
-                open:'send'
+                open: 'send'
                 // body: null
             }
         },
@@ -61,6 +64,12 @@
             },
             changeStar(item) {
                 return item.favorite ? 'star' : 'star_border';
+            },
+            packChange(prop, value, index) {
+                let isArray = prop instanceof Array;
+                if (!isArray) prop = [prop];
+                prop.unshift(index);
+                this.$emit('settle', prop, value);
             }
         },
         computed: {},
@@ -72,7 +81,7 @@
 </script>
 
 <style scoped>
-    .mu-list .mu-list{
+    .mu-list .mu-list {
         padding-left: 34px;
     }
 </style>

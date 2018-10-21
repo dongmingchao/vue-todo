@@ -24,36 +24,48 @@
                  slot="nested"
                  :is-expand="false"
                  placeholder="添加新的步骤"
+                 @settle="stepSettle"
                  @createTodo="setNewTodo"/>
         <mu-list-item slot="nested" button>
             <mu-date-input icon="access_alarm"
-                           v-model="time"
+                           v-model="item.time"
+
                            label="设定闹钟"
+                           @change="$emit('settle','time',item.time)"
                            type="time" label-float full-width></mu-date-input>
         </mu-list-item>
         <mu-list-item slot="nested" button>
-            <mu-date-input v-model="date"
+            <mu-date-input v-model="item.date"
                            icon="today"
                            label="添加相关时间"
+                           @change="$emit('settle','date',item.date)"
                            label-float full-width no-display></mu-date-input>
         </mu-list-item>
         <mu-list-item slot="nested" button>
-            <mu-select label="设置重复" icon="today" v-model="repeats" full-width label-float>
-                <mu-option v-for="language,index in languages" avatar :key="language" :label="language"
-                           :value="language">
+            <mu-select label="设置重复"
+                       icon="today"
+                       v-model="item.repeats"
+                       @change="$emit('settle','repeat',item.repeats)"
+                       full-width label-float>
+                <mu-option v-for="(term,index) in repeatTerm" avatar :key="term" :label="term"
+                           :value="term">
                     <mu-list-item-action avatar>
                         <mu-avatar :size="36" color="primary">
-                            {{language.substring(0, 1)}}
+                            {{term.substring(1, 2)}}
                         </mu-avatar>
                     </mu-list-item-action>
                     <mu-list-item-content>
-                        <mu-list-item-title>{{language}}</mu-list-item-title>
+                        <mu-list-item-title>{{term}}</mu-list-item-title>
                     </mu-list-item-content>
                 </mu-option>
             </mu-select>
         </mu-list-item>
         <mu-list-item slot="nested" button>
-            <mu-text-field icon="note" v-model="note" label="添加笔记" label-float multi-line :rows="3" full-width></mu-text-field>
+            <mu-text-field icon="note"
+                           v-model="item.note"
+                           label="添加笔记"
+                           @change="$emit('settle','note',item.note)"
+                           label-float multi-line :rows="3" full-width></mu-text-field>
         </mu-list-item>
     </mu-list-item>
 </template>
@@ -67,11 +79,11 @@
         props: ['item', 'type', 'expand'],
         data() {
             return {
-                date: null,
-                time: null,
-                repeats: null,
-                languages: ['C', 'Java'],
-                note: null,
+                // date: null,
+                // time: null,
+                // repeats: null,
+                repeatTerm: ['每天', '每周', '每月', '每年', '自定义'],
+                // note: null,
 
                 open: false,
                 selects: []
@@ -86,6 +98,7 @@
             check(e) {
                 console.log('you check a todo', e);
                 this.$emit('check', e);
+                this.$emit('settle', 'checked', e);
             },
             setNewTodo(str) {
                 let item = this.item;
@@ -98,11 +111,16 @@
                 item.steps.push({
                     label: str,
                     favorite: false
-                })
+                });
+                this.$emit('settle', 'steps', item.steps);
             },
             toggle(val) {
                 console.log('list item toggle', val);
                 // this.open = false;
+            },
+            stepSettle(prop, value) {
+                prop.unshift('steps');
+                this.$emit('settle', prop, value);
             }
         },
         mounted() {
