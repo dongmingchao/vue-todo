@@ -79,7 +79,7 @@ module.exports = {
         noInfo: true,
         overlay: true,
         before: function (app) {
-            app.get('/service-worker.js', function (req, res) {
+            app.get('dist/service-worker.js', function (req, res) {
                 res.set({ 'Content-Type': 'application/javascript; charset=utf-8' });
                 res.send(fs.readFileSync('dist/service-worker.js'));
             });
