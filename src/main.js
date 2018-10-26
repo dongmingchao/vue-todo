@@ -3,7 +3,7 @@ import VueRouter from 'vue-router';
 import App from './App';
 import Routers from './router.js';
 import 'mdui/dist/css/mdui.css';
-
+import './assets/iconfont/material-icons.css'
 import MuseUI from 'muse-ui';
 import 'muse-ui/dist/muse-ui.css';
 

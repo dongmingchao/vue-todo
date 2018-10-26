@@ -4,7 +4,7 @@
 mkdir output
 cp -r dist output/
 cp -r apis output/
-cp -r _public/* output/
+cp index.html output/
 cp -r src/assets output/
 
 cd output || exit 1 # abort script if folder does not exists
