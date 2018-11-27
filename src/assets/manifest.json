@@ -2,7 +2,7 @@
   "scope": "/",
   "name": "打勾勾",
   "short_name": "打勾勾",
-  "start_url": "/mdui-todo/#/",
+  "start_url": "/mdui-todo/",
   "display": "standalone",
   "description": "打勾勾，一个本地todoList应用",
   "orientation": "portrait",

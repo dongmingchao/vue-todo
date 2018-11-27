@@ -1,11 +1,14 @@
 <template>
-    <mu-list-item :nested="expand" :open="open" button>
+    <mu-list-item :nested="expand" :open="open" button
+                  v-hammer:panend="onPanEnd"
+                  v-hammer:pan.left="onSwipeLeft">
+                  <!--v-hammer:swipe.left="onSwipeLeft">-->
         <mu-list-item-action>
             <mu-checkbox v-model="item.checked" @change="check"></mu-checkbox>
         </mu-list-item-action>
-        <mu-list-item-content @click="clickBody">
+        <mu-list-item-content v-hammer:tap="clickBody">
             <mu-list-item-title>
-                {{item.label}}
+                <slot/> {{item.label}}
             </mu-list-item-title>
             <mu-list-item-sub-title style="color: rgba(0, 0, 0, .87)" v-if="item.prefix">
                 {{item.prefix}}
@@ -121,6 +124,20 @@
             stepSettle(prop, value) {
                 prop.unshift('steps');
                 this.$emit('settle', prop, value);
+            },
+            onSwipeLeft(eve) {
+                let elm = this.$el;
+                elm.style.transform = `translateX(${eve.deltaX}px)`;
+                console.log('swift left', eve.deltaX, eve);
+            },
+            onPanEnd(eve){
+                console.log('pan', eve.deltaX, eve);
+                let elm = this.$el;
+                elm.style.transition = `transform .5s ease-out`;
+                elm.style.transform = `translateX(0)`;
+                setTimeout(()=>{
+                    elm.style.transition = undefined;
+                },500);
             }
         },
         mounted() {
@@ -138,8 +155,4 @@
         margin-left: 0;
         width: 0;
     }
-
-    /*.detail-setting > div {*/
-    /*display: inline-block;*/
-    /*}*/
 </style>

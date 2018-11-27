@@ -2,7 +2,7 @@
     <div style="height: 100%;">
         <md-sider v-bind:drawer.sync="drawer" :list="sideList" @changeCatalog="setCatalog"/>
         <md-header :title="title" @openSide="collapsedSider" :loading="loading.header"/>
-        <md-list class="main-list"
+        <md-list class="main-list" ref="list"
                  :list="todoList"
                  @settle="saveTodoListChange"
                  @createTodo="setNewTodo"
@@ -22,6 +22,7 @@
         components: {MdList, MdSider, MdHeader},
         data() {
             return {
+                items: [1,2,3,4,5,6,7,8,9],
                 loading: {
                     header: true
                 },
@@ -154,6 +155,11 @@
                 this.todoList = local.data.todoList;
                 this.loading.header = false;
                 this.selectedCatalog = {prop: item.prop, data: local.data};
+                // this.$refs.list.catalogChange(local.data.todoList);
+            },
+            shuffle() {
+                let e = this.items.shift();
+                this.items.push(e);
             }
         },
         mounted() {
@@ -162,14 +168,19 @@
     }
 </script>
 <style scoped>
+
+    .flip-list-move {
+        transition: transform 1s;
+    }
+
     .main-list {
         height: calc(100% - 10rem);
-        position: absolute;
     }
 
     @media (min-width: 1023px) {
         .main-list {
             width: calc(100% - 240px);
+            position: absolute;
         }
     }
 </style>

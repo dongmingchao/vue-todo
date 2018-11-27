@@ -8,11 +8,14 @@ import MuseUI from 'muse-ui';
 import 'muse-ui/dist/muse-ui.css';
 
 Vue.use(MuseUI);
+// import touch from 'vue-directive-touch';
+// Vue.use(touch);
+import { VueHammer } from 'vue2-hammer'
+Vue.use(VueHammer);
 
 //解决循环引用组件报错
 import MdList from "./component/md-list";
 Vue.component('md-list', MdList);
-
 
 Vue.use(VueRouter);
 
