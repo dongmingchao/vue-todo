@@ -3,9 +3,9 @@
         <mu-list textline="two-line" nested-indent>
             <transition-group name="flip-list" tag="div" mode="in-out">
                 <template v-for="(item,index) in showList">
-                    @settle="(prop,value) => packChange(prop,value,index)"
                     <md-line :item.sync="item" :key="item.index"
                              v-if="(item!=='add')&&(item!=='finish')"
+                             @settle="(prop,value) => packChange(prop,value,index)"
                              @click="expandTodo(index)"
                              @check="check(item,index)"
                              :expand="isExpand">{{item.index}}
