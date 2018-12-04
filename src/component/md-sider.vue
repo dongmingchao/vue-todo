@@ -1,25 +1,83 @@
 <template>
     <div class="mdui-drawer mdui-drawer-full-height" id="drawer">
-        <ul class="mdui-list">
+        <mu-list textline="two-line">
+            <mu-list-item avatar>
+                <mu-list-item-action>
+                    <mu-avatar>
+                        <img src="../assets/logo.png" alt="">
+                    </mu-avatar>
+                </mu-list-item-action>
+                <mu-list-item-content>
+                    <mu-list-item-title>头像</mu-list-item-title>
+                    <mu-list-item-sub-title>Jan 9, 2014</mu-list-item-sub-title>
+                </mu-list-item-content>
+                <mu-list-item-action>
+                    <mu-badge content="离线" color="error"></mu-badge>
+                    <mu-button icon>
+                        <mu-icon value="refresh"></mu-icon>
+                    </mu-button>
+                </mu-list-item-action>
+            </mu-list-item>
+        </mu-list>
+        <div class="loading curtain" :style="{opacity:loading?1:0}" style="transition: opacity 0.5s ease-in-out">
+            <mu-linear-progress></mu-linear-progress>
+        </div>
+        <ul class="mdui-list" ref="list">
             <template v-for="(item,index) in list">
                 <li class="mdui-subheader" v-if="item.type==='title'">{{item.label}}</li>
-                <li class="mdui-list-item mdui-ripple" v-else @click="changeCatalog(item)">
+                <li class="mdui-list-item mdui-ripple" v-else-if="item.type==='add'" @click="addCatalog">
+                    <i class="mdui-list-item-icon mdui-icon material-icons">playlist_add</i>
+                    <div class="mdui-list-item-content">添加清单</div>
+                </li>
+                <li class="mdui-list-item mdui-ripple" v-else-if="item.type==='manage'">
+                    <i class="mdui-list-item-icon mdui-icon material-icons">playlist_add_check</i>
+                    <div class="mdui-list-item-content">管理清单和标签</div>
+                </li>
+                <li class="mdui-list-item mdui-ripple" v-else
+                    @contextmenu.prevent="longTap(index)"
+                    @click="changeCatalog(item)">
                     <i class="mdui-list-item-icon mdui-icon material-icons">{{item.icon}}</i>
-                    <div class="mdui-list-item-content">{{item.label}}</div>
+                    <div class="mdui-list-item-content">
+                        {{item.edit?null:item.label}}
+                        <div class="mdui-textfield" style="padding: 0" v-show="item.edit">
+                            <input class="mdui-textfield-input" @keydown.enter="addCatalogFinish" @blur="addCatalogFinish"
+                                   ref="input"
+                                   placeholder="标题"/>
+                        </div>
+                    </div>
                 </li>
             </template>
         </ul>
+        <mu-popover :open.sync="open" :trigger="trigger" placement="bottom-end">
+            <mu-list>
+                <mu-list-item button>
+                    <mu-list-item-title>修改图标</mu-list-item-title>
+                </mu-list-item>
+                <mu-list-item button>
+                    <mu-list-item-title>删除</mu-list-item-title>
+                </mu-list-item>
+                <mu-list-item button>
+                    <mu-list-item-title>标注颜色</mu-list-item-title>
+                </mu-list-item>
+            </mu-list>
+        </mu-popover>
     </div>
 </template>
 
 <script>
     import mdui from 'mdui/dist/js/mdui';
+    import localforge from 'localforage';
+    import io from "../lib/io";
 
     export default {
         name: "md-sider",
-        props: ['drawer', 'list'],
+        props: ['drawer', 'list', 'loading'],
         data() {
-            return {}
+            return {
+                open: false,
+                trigger: null,
+                create: null
+            }
         },
         mounted() {
             let drawer = new mdui.Drawer('#drawer', {swipe: true});
@@ -28,8 +86,40 @@
         methods: {
             changeCatalog(item) {
                 if (window.screen.availWidth < 1024) this.drawer.close();
-                if (!item.path) return;
                 this.$emit('changeCatalog', item);
+            },
+            longTap(e) {
+                this.open = true;
+                let ul = this.$refs.list;
+                console.log('长按', ul);
+                this.trigger = ul.children[e];
+            },
+            addCatalog() {
+                let len = this.list.length;
+                this.create = {
+                    index: len - 3,
+                    body: {
+                        icon: 'format_list_bulleted',
+                        edit: true
+                    }
+                };
+                for (let i = 0; i < 3; i++) {
+                    this.list[len - i] = this.list[len - i - 1];
+                }
+                this.$set(this.list, len - 3, this.create.body);
+                this.$nextTick(() => {
+                    this.$refs.input[this.$refs.input.length - 1].focus();
+                });
+            },
+            addCatalogFinish(e) {
+                let value = e.target.value;
+                if (value !== '') {
+                    delete this.create.body.edit;
+                    this.create.body.label = value;
+                    this.create.body.prop = value;
+                    this.$forceUpdate();
+                    this.$emit('createCatalog', this.create.body);
+                } else this.list.splice(this.create.index, 1);
             }
         }
     }

@@ -10,7 +10,7 @@ export default {
     /**
      * 按照key获取值，获取最新的值，并通过[api]更新本地存储
      * @param key 对象键名
-     * @returns {Promise<{data:*,expire:string}|null>}
+     * @returns {Promise<{data:*,expire:string}|*>}
      *          null: 本地没有这个值
      *          object: 返回最新的这个值
      */
@@ -20,6 +20,7 @@ export default {
         if (update === null) return null;
         if (update === false) {
             let v = await this.fetch(local.data.api);
+            await this.delay();
             this.save(key, v);
         }
         let local = await localforge.getItem(key);
@@ -28,14 +29,36 @@ export default {
 
     /**
      *
+     * @param key
+     * @param url
+     * @returns {Promise<*|string|HTMLElement|BodyInit|ReadableStream>}
+     */
+    async autofetch(key,url){
+        let local = await this.fetchObj(key);
+        if (local === null) {
+            local = await this.fetch(url);
+            this.save(key,local.data);
+        }
+        return local.data.body;
+    },
+
+    /**
+     *
      * @param url
      * @returns {Promise<{data: *}>}
      */
     async fetch(url) {
-        let res = await fetch(url);
-        res = await res.json();
+        let request = new Promise((r,j) => {
+            let oReq = new XMLHttpRequest();
+            oReq.open("GET", url);
+            oReq.send();
+            oReq.onload = function () {
+                r(this.responseText);
+            }
+        });
+        let res = await request;
+        res = JSON.parse(res);
         console.log('io:fetch', res);
-        await this.delay();
         return {data: res};
     },
 
@@ -56,8 +79,10 @@ export default {
     async isUpdate(key) {
         let local = await localforge.getItem(key);
         if (local === null) return null;
-        let res = await fetch(local.data.checkExpire);
-        res = await res.json();
-        return res.expire <= local.expire;
+        if (local.data.checkExpire) {
+            let res = await this.fetch(local.data.checkExpire);
+            res = res.data;
+            return res.expire <= local.expire;
+        }else return true;
     }
 }

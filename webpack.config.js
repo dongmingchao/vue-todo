@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const webpack = require('webpack');
 const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
     entry: './src/main.js',
@@ -80,7 +81,7 @@ module.exports = {
         overlay: true,
         before: function (app) {
             app.get('dist/service-worker.js', function (req, res) {
-                res.set({ 'Content-Type': 'application/javascript; charset=utf-8' });
+                res.set({'Content-Type': 'application/javascript; charset=utf-8'});
                 res.send(fs.readFileSync('dist/service-worker.js'));
             });
         }
@@ -89,7 +90,7 @@ module.exports = {
         hints: false
     },
     devtool: '#eval-source-map',
-    plugins:[
+    plugins: [
         // service worker caching
         new SWPrecacheWebpackPlugin({
             cacheId: 'my-vue-app',
@@ -97,7 +98,8 @@ module.exports = {
             staticFileGlobs: ['dist/**/*.{js,html,css}'],
             minify: true,
             stripPrefix: 'dist/'
-        })
+        }),
+        new VueLoaderPlugin()
     ]
 };
 
@@ -108,12 +110,6 @@ if (process.env.NODE_ENV === 'production') {
         new webpack.DefinePlugin({
             'process.env': {
                 NODE_ENV: '"production"'
-            }
-        }),
-        new webpack.optimize.UglifyJsPlugin({
-            sourceMap: true,
-            compress: {
-                warnings: false
             }
         }),
         new webpack.LoaderOptionsPlugin({

@@ -1,20 +1,22 @@
 <template>
-    <mu-list-item :nested="expand" :open="open" button
-                  v-hammer:panend="onPanEnd"
-                  v-hammer:pan.left="onSwipeLeft">
-                  <!--v-hammer:swipe.left="onSwipeLeft">-->
+    <mu-list-item :nested="expand" :open="open" button>
         <mu-list-item-action>
             <mu-checkbox v-model="item.checked" @change="check"></mu-checkbox>
         </mu-list-item-action>
-        <mu-list-item-content v-hammer:tap="clickBody">
+        <mu-list-item-content v-hammer:tap="clickBody"
+                              v-hammer:panend="onPanEnd"
+                              v-hammer:pan.left="onSwipeLeft">
             <mu-list-item-title>
-                <slot/> {{item.label}}
+                <slot/>
+                {{item.label}}
             </mu-list-item-title>
             <mu-list-item-sub-title style="color: rgba(0, 0, 0, .87)" v-if="item.prefix">
-                {{item.prefix}}
+                <mu-chip class="tag-chip" color="primary">
+                    {{item.prefix}}
+                </mu-chip>
             </mu-list-item-sub-title>
             <mu-list-item-sub-title v-if="item.content">
-                {{item.content?item.content:null}}
+                {{item.content}}
             </mu-list-item-sub-title>
         </mu-list-item-content>
         <mu-list-item-action>
@@ -22,7 +24,6 @@
             <mu-checkbox color="yellow700" v-model="selects" value="value1" uncheck-icon="star_border"
                          checked-icon="star"></mu-checkbox>
         </mu-list-item-action>
-        <!--<slot name="right"/>-->
         <md-list :list="item.steps"
                  slot="nested"
                  :is-expand="false"
@@ -31,17 +32,16 @@
                  @createTodo="setNewTodo"/>
         <mu-list-item slot="nested" button>
             <mu-date-input icon="access_alarm"
-                           v-model="item.time"
-
+                           v-model="time"
                            label="设定闹钟"
-                           @change="$emit('settle','time',item.time)"
+                           @change="$emit('settle','time',time.toJSON())"
                            type="time" label-float full-width></mu-date-input>
         </mu-list-item>
         <mu-list-item slot="nested" button>
-            <mu-date-input v-model="item.date"
+            <mu-date-input v-model="date"
                            icon="today"
                            label="添加相关时间"
-                           @change="$emit('settle','date',item.date)"
+                           @change="$emit('settle','date',date.toJSON())"
                            label-float full-width no-display></mu-date-input>
         </mu-list-item>
         <mu-list-item slot="nested" button>
@@ -50,15 +50,15 @@
                        v-model="item.repeats"
                        @change="$emit('settle','repeat',item.repeats)"
                        full-width label-float>
-                <mu-option v-for="(term,index) in repeatTerm" avatar :key="term" :label="term"
-                           :value="term">
+                <mu-option v-for="(term,index) in repeatTerm" avatar :key="index" :label="term.label"
+                           :value="term.label">
                     <mu-list-item-action avatar>
                         <mu-avatar :size="36" color="primary">
-                            {{term.substring(1, 2)}}
+                            {{term.icon}}
                         </mu-avatar>
                     </mu-list-item-action>
                     <mu-list-item-content>
-                        <mu-list-item-title>{{term}}</mu-list-item-title>
+                        <mu-list-item-title>{{term.label}}</mu-list-item-title>
                     </mu-list-item-content>
                 </mu-option>
             </mu-select>
@@ -70,6 +70,12 @@
                            @change="$emit('settle','note',item.note)"
                            label-float multi-line :rows="3" full-width></mu-text-field>
         </mu-list-item>
+        <mu-button color="secondary"
+                   ref="deleteButton"
+                   :style="{transform: showDelete}"
+                   @click="deleteItem"
+                   style="right: -100px;position: absolute;">删除
+        </mu-button>
     </mu-list-item>
 </template>
 
@@ -85,14 +91,47 @@
                 // date: null,
                 // time: null,
                 // repeats: null,
-                repeatTerm: ['每天', '每周', '每月', '每年', '自定义'],
+                repeatTerm: [
+                    {
+                        icon: '无',
+                        label: '无'
+                    }, {
+                        icon: '天',
+                        label: '每天'
+                    }, {
+                        icon: '周',
+                        label: '每周'
+                    }, {
+                        icon: '月',
+                        label: '每月'
+                    }, {
+                        icon: '年',
+                        label: '每年'
+                    }, {
+                        icon: '自',
+                        label: '自定义'
+                    }],
                 // note: null,
 
                 open: false,
-                selects: []
+                deleteShow: false,
+                selects: [],
+                time: null,
+                date: null
+            }
+        },
+        watch: {
+            item() {
+                this.open = false;
+                this.deleteShow = false;
+                this.loadInit();
             }
         },
         methods: {
+            loadInit() {
+                if (this.item.time) this.time = new Date(this.item.time);
+                if (this.item.date) this.date = new Date(this.item.date);
+            },
             clickBody(e) {
                 console.log('click todo line body', e);
                 this.open = !this.open;
@@ -113,7 +152,8 @@
                 }
                 item.steps.push({
                     label: str,
-                    favorite: false
+                    favorite: false,
+                    repeats:'无'
                 });
                 this.$emit('settle', 'steps', item.steps);
             },
@@ -126,22 +166,24 @@
                 this.$emit('settle', prop, value);
             },
             onSwipeLeft(eve) {
-                let elm = this.$el;
-                elm.style.transform = `translateX(${eve.deltaX}px)`;
-                console.log('swift left', eve.deltaX, eve);
+                this.deleteButton.style.transform = `translateX(${eve.deltaX}px)`;
             },
-            onPanEnd(eve){
-                console.log('pan', eve.deltaX, eve);
-                let elm = this.$el;
-                elm.style.transition = `transform .5s ease-out`;
-                elm.style.transform = `translateX(0)`;
-                setTimeout(()=>{
-                    elm.style.transition = undefined;
-                },500);
+            onPanEnd(eve) {
+                this.deleteShow = eve.deltaX < -50;
+                this.$forceUpdate();
+            },
+            deleteItem() {
+                this.$emit('delete', this.item);
             }
         },
         mounted() {
-
+            this.deleteButton = this.$refs.deleteButton.$el;
+            this.loadInit();
+        },
+        computed: {
+            showDelete(vm) {
+                return `translateX(${vm.deleteShow ? -120 : 0}px)`
+            }
         }
     }
 </script>
@@ -154,5 +196,10 @@
     .item-header-center {
         margin-left: 0;
         width: 0;
+    }
+
+    .tag-chip {
+        font-size: smaller;
+        line-height: 20px;
     }
 </style>

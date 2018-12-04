@@ -6,11 +6,17 @@ import 'mdui/dist/css/mdui.css';
 import './assets/iconfont/material-icons.css'
 import MuseUI from 'muse-ui';
 import 'muse-ui/dist/muse-ui.css';
+import moment from 'moment';
+
+moment.locale('zh-CN');
 
 Vue.use(MuseUI);
 // import touch from 'vue-directive-touch';
 // Vue.use(touch);
 import { VueHammer } from 'vue2-hammer'
+VueHammer.config.press = {
+    time: 500
+};
 Vue.use(VueHammer);
 
 //解决循环引用组件报错
