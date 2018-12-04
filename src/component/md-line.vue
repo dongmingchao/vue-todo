@@ -34,14 +34,14 @@
             <mu-date-input icon="access_alarm"
                            v-model="time"
                            label="设定闹钟"
-                           @change="$emit('settle','time',time.toJSON())"
+                           @change="setTime('time')"
                            type="time" label-float full-width></mu-date-input>
         </mu-list-item>
         <mu-list-item slot="nested" button>
             <mu-date-input v-model="date"
                            icon="today"
                            label="添加相关时间"
-                           @change="$emit('settle','date',date.toJSON())"
+                           @change="setTime('date')"
                            label-float full-width no-display></mu-date-input>
         </mu-list-item>
         <mu-list-item slot="nested" button>
@@ -153,7 +153,7 @@
                 item.steps.push({
                     label: str,
                     favorite: false,
-                    repeats:'无'
+                    repeats: '无'
                 });
                 this.$emit('settle', 'steps', item.steps);
             },
@@ -174,6 +174,25 @@
             },
             deleteItem() {
                 this.$emit('delete', this.item);
+            },
+            setTime(type, value) {
+                if (type === 'time') {
+                    this.$emit('settle', type, this.time.toJSON());
+                }
+                if (type === 'date')
+                    this.$emit('settle', type, this.date.toJSON());
+                if (this.date && this.time) {
+                    let datetime = new Date(this.date.getFullYear(),
+                        this.date.getMonth(),
+                        this.date.getDate(),
+                        this.time.getHours(),
+                        this.time.getMinutes(),
+                        this.time.getSeconds());
+                    console.log('date', this.date, 'time', this.time);
+                    console.log('date time', datetime);
+                    this.item.datetime = datetime;
+                    this.$emit('pushNotify', this.item);
+                }
             }
         },
         mounted() {

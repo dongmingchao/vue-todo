@@ -12,6 +12,7 @@
                  @settle="saveTodoListChange"
                  @createTodo="setNewTodo"
                  @delete="deleteTodo"
+                 @pushNotify="pushNotification"
                  :is-expand="true"
                  placeholder="添加新的待做事项"/>
     </div>
@@ -100,16 +101,15 @@
                 if (typeof item.prop === 'undefined') return;
                 this.loading.header = true;
                 let local = await io.fetchObj(item.prop);
-                // if (local === null) {
-                //     if (typeof item.path === 'undefined') {
-                //         //离线使用，新清单
-
-                // }
+                //第一次安装app的默认清单
+                if (local === null) {
+                    local = await io.fetch(item.path);
+                    io.save(item.prop, local.data);
+                }
                 this.title = local.data.title;
                 this.todoList = local.data.todoList;
                 this.loading.header = false;
                 this.selectedCatalog = {prop: item.prop, data: local.data};
-                // this.$refs.list.catalogChange(local.data.todoList);
             },
             deleteTodo(todo) {
                 this.todoList.splice(this.todoList.indexOf(todo), 1);
@@ -158,10 +158,20 @@
                 console.log('是否是安卓环境运行？', window.cordova);
                 console.log('window', window);
             },
-            deleteCatalog(prop){
-                console.log('delete catalog',prop);
+            deleteCatalog(prop) {
+                console.log('delete catalog', prop);
                 io.remove(prop);
+                this.setCatalog(this.sideList[1]);
                 io.save('side_list', {body: this.sideList});
+            },
+            pushNotification(target) {
+                console.log('push notification', target, this.selectedCatalog);
+                this.device.notification.post({
+                    id: this.selectedCatalog.prop + target.index + target.label,
+                    title: target.label,
+                    text: target.content,
+                    trigger: {at: target.datetime}
+                });
             }
         },
         mounted() {

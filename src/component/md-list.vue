@@ -8,6 +8,7 @@
                          @click="expandTodo(index)"
                          @check="check(item,index)"
                          @delete="deleteTodo"
+                         @pushNotify="pe => $emit('pushNotify',pe)"
                          :expand="isExpand">{{item.index}}
                 </md-line>
                 <mu-list-item :key="item" v-if="item==='add'">
