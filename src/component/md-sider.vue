@@ -40,7 +40,8 @@
                     <div class="mdui-list-item-content">
                         {{item.edit?null:item.label}}
                         <div class="mdui-textfield" style="padding: 0" v-show="item.edit">
-                            <input class="mdui-textfield-input" @keydown.enter="addCatalogFinish" @blur="addCatalogFinish"
+                            <input class="mdui-textfield-input" @keydown.enter="addCatalogFinish"
+                                   @blur="addCatalogFinish"
                                    ref="input"
                                    placeholder="标题"/>
                         </div>
@@ -53,7 +54,7 @@
                 <mu-list-item button>
                     <mu-list-item-title>修改图标</mu-list-item-title>
                 </mu-list-item>
-                <mu-list-item button>
+                <mu-list-item button @click="delete_catalog">
                     <mu-list-item-title>删除</mu-list-item-title>
                 </mu-list-item>
                 <mu-list-item button>
@@ -76,6 +77,7 @@
             return {
                 open: false,
                 trigger: null,
+                triggerIndex: 0,
                 create: null
             }
         },
@@ -93,6 +95,7 @@
                 let ul = this.$refs.list;
                 console.log('长按', ul);
                 this.trigger = ul.children[e];
+                this.triggerIndex = e;
             },
             addCatalog() {
                 let len = this.list.length;
@@ -108,7 +111,11 @@
                 }
                 this.$set(this.list, len - 3, this.create.body);
                 this.$nextTick(() => {
-                    this.$refs.input[this.$refs.input.length - 1].focus();
+                    let input = this.$refs.input[this.$refs.input.length - 1];
+                    console.log(input.scrollHeight);
+                    console.log(input.scrollTop);
+                    input.scroll(0, -100);
+                    input.focus();
                 });
             },
             addCatalogFinish(e) {
@@ -120,6 +127,13 @@
                     this.$forceUpdate();
                     this.$emit('createCatalog', this.create.body);
                 } else this.list.splice(this.create.index, 1);
+            },
+            delete_catalog() {
+                let prop = '';
+                prop += this.list[this.triggerIndex].prop;
+                this.list.splice(this.triggerIndex, 1);
+                this.open = false;
+                this.$emit('delete', prop);
             }
         }
     }

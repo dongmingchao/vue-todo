@@ -4,6 +4,7 @@
                   :list="sideList"
                   @changeCatalog="setCatalog"
                   @createCatalog="setNewCatalog"
+                  @delete="deleteCatalog"
                   :loading="loading.side"/>
         <md-header :title="title" @openSide="collapsedSider" :loading="loading.header"/>
         <md-list class="main-list" ref="list"
@@ -99,31 +100,11 @@
                 if (typeof item.prop === 'undefined') return;
                 this.loading.header = true;
                 let local = await io.fetchObj(item.prop);
-                if (local === null) {
-                    if (typeof item.path === 'undefined') {
-                        //离线使用，新清单
-                        local = {};
-                        let date = moment().format('MMMDo dddd');
-                        local.data = {
-                            "title": {
-                                "title": item.label,
-                                "date": date,
-                                "actions": [
-                                    {
-                                        "name": "排序"
-                                    },
-                                    {
-                                        "name": "设置背景图"
-                                    }
-                                ]
-                            },
-                            "todoList": []
-                        };
-                    } else {
-                        local = await io.fetch(item.path);
-                    }
-                    io.save(item.prop, local.data);
-                }
+                // if (local === null) {
+                //     if (typeof item.path === 'undefined') {
+                //         //离线使用，新清单
+
+                // }
                 this.title = local.data.title;
                 this.todoList = local.data.todoList;
                 this.loading.header = false;
@@ -138,13 +119,31 @@
             async getSideList() {
                 return await io.autofetch('side_list', './apis/sidelist.json');
             },
-            setNewCatalog(label) {
+            setNewCatalog(item) {
+                let local = {};
+                let date = moment().format('MMMDo dddd');
+                local = {
+                    "title": {
+                        "title": item.label,
+                        "date": date,
+                        "actions": [
+                            {
+                                "name": "排序"
+                            },
+                            {
+                                "name": "设置背景图"
+                            }
+                        ]
+                    },
+                    "todoList": []
+                };
+                io.save(item.prop, local);
                 io.save('side_list', {body: this.sideList});
             },
-            ready(e){
-                console.log('Vue中 设备已就绪',e);
+            ready(e) {
+                console.log('Vue中 设备已就绪', e);
                 this.device = new media(window);
-                console.log('can be set',this.device.notification.defaultSet());
+                console.log('can be set', this.device.notification.defaultSet());
                 this.device.notification.post({
                     title: '计划任务',
                     text: '计划任务正在后台运行',
@@ -154,10 +153,15 @@
                 this.device.notification.post({
                     title: '计划任务',
                     text: '计划任务展示一个任务',
-                    trigger: { in: 10, unit: 'second' }
+                    trigger: {in: 10, unit: 'second'}
                 });
-                console.log('是否是安卓环境运行？',window.cordova);
-                console.log('window',window);
+                console.log('是否是安卓环境运行？', window.cordova);
+                console.log('window', window);
+            },
+            deleteCatalog(prop){
+                console.log('delete catalog',prop);
+                io.remove(prop);
+                io.save('side_list', {body: this.sideList});
             }
         },
         mounted() {
@@ -166,7 +170,7 @@
                 this.sideList = li;
                 this.setCatalog(li[1]);
             });
-            document.addEventListener('deviceready',this.ready);
+            document.addEventListener('deviceready', this.ready);
         }
     }
 </script>

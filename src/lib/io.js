@@ -66,6 +66,9 @@ export default {
         let v = {expire: new Date().toJSON(), data: value};
         localforge.setItem(key, v);
     },
+    remove(key){
+        localforge.removeItem(key);
+    },
 
     /**
      * 检查某个对象是否是最新的，若本地无值，则不是最新的(null)
