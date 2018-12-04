@@ -109,7 +109,7 @@
                 this.title = local.data.title;
                 this.todoList = local.data.todoList;
                 this.loading.header = false;
-                this.selectedCatalog = {prop: item.prop, data: local.data};
+                this.selectedCatalog = {prop: item.prop, data: local.data, index:this.todoList.indexOf(item)};
             },
             deleteTodo(todo) {
                 this.todoList.splice(this.todoList.indexOf(todo), 1);
@@ -165,9 +165,10 @@
                 io.save('side_list', {body: this.sideList});
             },
             pushNotification(target) {
-                console.log('push notification', target, this.selectedCatalog);
+                let id = ''+this.selectedCatalog.index + target.index;
+                console.log('push notification', target, this.selectedCatalog, id);
                 this.device.notification.post({
-                    id: this.selectedCatalog.prop + target.index + target.label,
+                    id: parseInt(id),
                     title: target.label,
                     text: target.content,
                     trigger: {at: target.datetime}

@@ -112,9 +112,7 @@
                 this.$set(this.list, len - 3, this.create.body);
                 this.$nextTick(() => {
                     let input = this.$refs.input[this.$refs.input.length - 1];
-                    console.log(input.scrollHeight);
-                    console.log(input.scrollTop);
-                    input.scroll(0, -100);
+                    setTimeout(() => input.scrollIntoView(), 10);
                     input.focus();
                 });
             },

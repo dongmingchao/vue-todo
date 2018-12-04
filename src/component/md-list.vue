@@ -45,7 +45,7 @@
                 create: null,
                 open: 'send',
                 checkedList: [],
-                showList: [],
+                showList: ['add', 'finish'],
                 exclude: ['add', 'finish']
                 // body: null
             }
@@ -60,6 +60,7 @@
                 let todo = document.getElementById('newTodoArea');
                 console.log(todo);
                 this.$nextTick(() => {
+                    setTimeout(() => todo.scrollIntoView(), 10);
                     todo.focus();
                 });
             },
