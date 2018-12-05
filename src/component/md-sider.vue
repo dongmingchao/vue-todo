@@ -75,7 +75,7 @@
         props: ['drawer', 'list', 'loading'],
         data() {
             return {
-                open: false,
+                menuopen: false,
                 trigger: null,
                 triggerIndex: 0,
                 create: null
@@ -87,7 +87,7 @@
         },
         methods: {
             changeCatalog(item) {
-                if (window.screen.availWidth < 1024) this.drawer.close();
+                if (window.innerWidth < 1024) this.drawer.close();
                 this.$emit('changeCatalog', item);
             },
             longTap(e) {
@@ -112,7 +112,7 @@
                 this.$set(this.list, len - 3, this.create.body);
                 this.$nextTick(() => {
                     let input = this.$refs.input[this.$refs.input.length - 1];
-                    setTimeout(() => input.scrollIntoView(), 10);
+                    setTimeout(() => input.scrollIntoView(), 300);
                     input.focus();
                 });
             },

@@ -1,17 +1,15 @@
 <template>
-    <mu-list-item :nested="expand" :open="open" button>
+    <mu-list-item :nested="expand" :open="nestedopen" button>
         <mu-list-item-action>
             <mu-checkbox v-model="item.checked" @change="check"></mu-checkbox>
         </mu-list-item-action>
-        <mu-list-item-content v-hammer:tap="clickBody"
-                              v-hammer:panend="onPanEnd"
-                              v-hammer:pan.left="onSwipeLeft">
+        <mu-list-item-content @click="clickBody">
             <mu-list-item-title>
                 <slot/>
                 {{item.label}}
             </mu-list-item-title>
             <mu-list-item-sub-title style="color: rgba(0, 0, 0, .87)" v-if="item.prefix">
-                <mu-chip class="tag-chip" color="primary">
+                <mu-chip class="tag-chip" color="primary" @click.stop="tapChip">
                     {{item.prefix}}
                 </mu-chip>
             </mu-list-item-sub-title>
@@ -70,12 +68,12 @@
                            @change="$emit('settle','note',item.note)"
                            label-float multi-line :rows="3" full-width></mu-text-field>
         </mu-list-item>
-        <mu-button color="secondary"
-                   ref="deleteButton"
-                   :style="{transform: showDelete}"
-                   @click="deleteItem"
-                   style="right: -100px;position: absolute;">删除
-        </mu-button>
+        <!--<mu-button color="secondary"-->
+                   <!--ref="deleteButton"-->
+                   <!--:style="{transform: showDelete}"-->
+                   <!--@click="deleteItem"-->
+                   <!--style="right: -100px;position: absolute;">删除-->
+        <!--</mu-button>-->
     </mu-list-item>
 </template>
 
@@ -84,7 +82,6 @@
 
     export default {
         name: "md-line",
-        components: {},
         props: ['item', 'type', 'expand'],
         data() {
             return {
@@ -113,7 +110,7 @@
                     }],
                 // note: null,
 
-                open: false,
+                nestedopen: false,
                 deleteShow: false,
                 selects: [],
                 time: null,
@@ -122,7 +119,7 @@
         },
         watch: {
             item() {
-                this.open = false;
+                this.nestedopen = false;
                 this.deleteShow = false;
                 this.loadInit();
             }
@@ -134,7 +131,7 @@
             },
             clickBody(e) {
                 console.log('click todo line body', e);
-                this.open = !this.open;
+                this.nestedopen = !this.nestedopen;
                 this.$emit('click', e);
             },
             check(e) {
@@ -193,10 +190,13 @@
                     this.item.datetime = datetime;
                     this.$emit('pushNotify', this.item);
                 }
+            },
+            tapChip(){
+                console.log('tap chip');
             }
         },
         mounted() {
-            this.deleteButton = this.$refs.deleteButton.$el;
+            // this.deleteButton = this.$refs.deleteButton.$el;
             this.loadInit();
         },
         computed: {

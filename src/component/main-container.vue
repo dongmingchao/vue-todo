@@ -144,17 +144,6 @@
                 console.log('Vue中 设备已就绪', e);
                 this.device = new media(window);
                 console.log('can be set', this.device.notification.defaultSet());
-                this.device.notification.post({
-                    title: '计划任务',
-                    text: '计划任务正在后台运行',
-                    foreground: true,
-                    ongoing: true
-                });
-                this.device.notification.post({
-                    title: '计划任务',
-                    text: '计划任务展示一个任务',
-                    trigger: {in: 10, unit: 'second'}
-                });
                 console.log('是否是安卓环境运行？', window.cordova);
                 console.log('window', window);
             },

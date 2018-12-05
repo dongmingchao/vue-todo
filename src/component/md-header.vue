@@ -1,8 +1,8 @@
 <template>
     <div class="mdui-appbar background">
-        <div class="mdui-card" style="height: 100%;">
+        <div class="mdui-card" style="height: 100%;color: #fff">
             <div class="mdui-card-media" v-if="title">
-                <img src="../assets/dusk.jpg" class="background"/>
+                <img src="../assets/flatland.jpg" class="background"/>
                 <div class="mdui-card-media-covered mdui-card-media-covered-transparent">
                     <div class="mdui-card-primary">
                         <div class="mdui-card-primary-title">{{title.title}}</div>
@@ -12,6 +12,9 @@
                         <button class="mdui-btn mdui-ripple mdui-ripple-white" v-for="(ac,index) in title.actions"
                                 :key="index">{{ac.name}}
                         </button>
+                        <a href="javascript:;" class="mdui-btn mdui-btn-icon">
+                            <i class="mdui-icon material-icons">more_horiz</i>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -20,10 +23,28 @@
                     <i class="mdui-icon material-icons">menu</i>
                 </a>
             </div>
+            <div class="mdui-card-menu">
+                <a href="javascript:;" class="mdui-btn mdui-btn-icon" @click="openFullscreenDialog">
+                    <i class="mdui-icon material-icons">settings</i>
+                </a>
+            </div>
         </div>
         <div class="loading curtain" :class="{'curtain-show':loading}">
             <div class="mdui-spinner mdui-spinner-colorful"></div>
         </div>
+        <mu-dialog width="360" transition="slide-bottom" fullscreen :open.sync="openFullscreen">
+            <mu-appbar color="primary" title="设置">
+                <mu-button slot="left" icon @click="closeFullscreenDialog">
+                    <mu-icon value="close"></mu-icon>
+                </mu-button>
+                <mu-button slot="right" flat  @click="closeFullscreenDialog">
+                    完成
+                </mu-button>
+            </mu-appbar>
+            <div style="padding: 24px;">
+                这里放设置
+            </div>
+        </mu-dialog>
     </div>
 </template>
 
@@ -33,8 +54,21 @@
     export default {
         name: "md-header",
         props: ['title', 'loading'],
+        data(){
+            return {
+                openFullscreen: false
+            }
+        },
         mounted() {
             mdui.mutation();
+        },
+        methods: {
+            openFullscreenDialog () {
+                this.openFullscreen = true;
+            },
+            closeFullscreenDialog () {
+                this.openFullscreen = false;
+            }
         }
     }
 </script>

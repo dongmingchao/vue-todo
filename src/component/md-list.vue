@@ -1,35 +1,51 @@
 <template>
-    <mu-list textline="two-line" nested-indent style="list-style-type: none;overflow: hidden;">
-        <transition-group name="flip-list" tag="div" mode="in-out">
-            <template v-for="(item,index) in showList">
-                <md-line :item.sync="item" :key="item.index"
-                         v-if="(item!=='add')&&(item!=='finish')"
-                         @settle="(prop,value) => packChange(prop,value,item.index)"
-                         @click="expandTodo(index)"
-                         @check="check(item,index)"
-                         @delete="deleteTodo"
-                         @pushNotify="pe => $emit('pushNotify',pe)"
-                         :expand="isExpand">{{item.index}}
-                </md-line>
-                <mu-list-item :key="item" v-if="item==='add'">
-                    <mu-list-item-action>
-                        <i class="mdui-icon material-icons">add</i>
-                    </mu-list-item-action>
-                    <div class="mdui-list-item-content" style="margin-left: 0" @click="createNewTodo">
-                        <div class="mdui-list-item-title" v-show="!create">{{placeholder}}</div>
-                        <div class="mdui-textfield" v-show="create">
-                            <input class="mdui-textfield-input" @keydown.enter="addTodo" @blur="addTodo"
-                                   id="newTodoArea"
-                                   placeholder="标题"/>
+    <div>
+        <mu-list textline="two-line" nested-indent style="list-style-type: none;overflow: hidden;">
+            <transition-group name="flip-list" tag="div" mode="in-out">
+                <template v-for="(item,index) in showList">
+                    <md-line :item.sync="item" :key="item.index"
+                             v-if="(item!=='add')&&(item!=='finish')"
+                             @settle="(prop,value) => packChange(prop,value,item.index)"
+                             @click="expandTodo(index)"
+                             @check="check(item,index)"
+                             ref="listItems"
+                             @contextmenu.native.prevent="longTap(item,index)"
+                             @pushNotify="pe => $emit('pushNotify',pe)"
+                             :expand="isExpand">{{item.index}}
+                    </md-line>
+                    <mu-list-item :key="item" v-if="item==='add'">
+                        <mu-list-item-action>
+                            <i class="mdui-icon material-icons">add</i>
+                        </mu-list-item-action>
+                        <div class="mdui-list-item-content" style="margin-left: 0" @click="createNewTodo">
+                            <div class="mdui-list-item-title" v-show="!create">{{placeholder}}</div>
+                            <div class="mdui-textfield" v-show="create">
+                                <input class="mdui-textfield-input" @keydown.enter="addTodo" @blur="addTodo"
+                                       id="newTodoArea"
+                                       placeholder="标题"/>
+                            </div>
                         </div>
-                    </div>
+                    </mu-list-item>
+                    <li v-if="item==='finish'&&checkedList.length" :key="item">
+                        <mu-sub-header>已完成</mu-sub-header>
+                    </li>
+                </template>
+            </transition-group>
+        </mu-list>
+        <mu-popover :open.sync="menuopen" :trigger="trigger" placement="bottom-end">
+            <mu-list>
+                <mu-list-item button>
+                    <mu-list-item-title>修改图标</mu-list-item-title>
                 </mu-list-item>
-                <li v-if="item==='finish'&&checkedList.length" :key="item">
-                    <mu-sub-header>已完成</mu-sub-header>
-                </li>
-            </template>
-        </transition-group>
-    </mu-list>
+                <mu-list-item button @click="deleteTodo">
+                    <mu-list-item-title>删除</mu-list-item-title>
+                </mu-list-item>
+                <mu-list-item button>
+                    <mu-list-item-title>标注颜色</mu-list-item-title>
+                </mu-list-item>
+            </mu-list>
+        </mu-popover>
+    </div>
 </template>
 
 <script>
@@ -43,7 +59,9 @@
         data() {
             return {
                 create: null,
-                open: 'send',
+                menuopen: false,
+                triggerIndex: 0,
+                trigger: null,
                 checkedList: [],
                 showList: ['add', 'finish'],
                 exclude: ['add', 'finish']
@@ -60,9 +78,20 @@
                 let todo = document.getElementById('newTodoArea');
                 console.log(todo);
                 this.$nextTick(() => {
-                    setTimeout(() => todo.scrollIntoView(), 10);
+                    setTimeout(() => todo.scrollIntoView(), 300);
                     todo.focus();
                 });
+            },
+            longTap(e,i) {
+                this.menuopen = true;
+                let ul = this.$refs.listItems;
+                this.triggerIndex = i;
+                for (let each of ul) {
+                    if (each.item === e) {
+                        this.trigger = each.$el;
+                        break;
+                    }
+                }
             },
             addTodo(e) {
                 console.log('add todo change', e.target.value);
@@ -75,10 +104,8 @@
                 this.create = null;
             },
             expandTodo(index) {
+                this.menuopen = false;
                 console.log('md list expand', index);
-                // setTimeout(() => {
-                //     this.body.toggle(index);
-                // },10000);
             },
             markFavorite(item) {
                 console.log('mark favorite', item);
@@ -143,8 +170,10 @@
                     this.showList.push(each);
                 }
             },
-            deleteTodo(item) {
-                this.showList.splice(this.showList.indexOf(item), 1);
+            deleteTodo() {
+                this.menuopen = false;
+                let item = this.showList[this.triggerIndex];
+                this.showList.splice(this.triggerIndex, 1);
                 this.$emit('delete', item);
                 console.log('delete a todo!!', item);
             }
