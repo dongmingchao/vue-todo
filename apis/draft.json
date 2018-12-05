@@ -4,12 +4,14 @@
   "title": {
     "title": "草稿",
     "date": "10月2日 星期五",
+    "bgimg":"dist/flatland.jpg",
     "actions": [
       {
         "name": "排序"
       },
       {
-        "name": "设置背景图"
+        "name": "设置背景图",
+        "want": "set-background-image"
       }
     ]
   },

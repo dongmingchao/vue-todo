@@ -6,7 +6,10 @@
                   @createCatalog="setNewCatalog"
                   @delete="deleteCatalog"
                   :loading="loading.side"/>
-        <md-header :title="title" @openSide="collapsedSider" :loading="loading.header"/>
+        <md-header :title="title"
+                   @settle="saveHeaderChange"
+                   @openSide="collapsedSider"
+                   :loading="loading.header"/>
         <md-list class="main-list" ref="list"
                  :list="todoList"
                  @settle="saveTodoListChange"
@@ -73,18 +76,33 @@
             saveTodoListChange(prop, value) {
                 // prop.unshift('todoList');
                 // prop.unshift(this.selectedCatalog.prop);
-                console.log('save change', prop, value);
+                console.log('save change','todoList', prop, value);
                 let todo = this.todoList;
                 let res = todo[prop[0]];
                 for (let k = 1; k < prop.length; k++) {
                     if (typeof res[prop[k]] === 'undefined') {
-                        res[prop[k]] = value;
-                        break;
-                    } else res = res[prop[k]];
+                        res[prop[k]] = {};
+                    }
+                    res = res[prop[k]];
                     console.log('in prop', res);
                 }
                 res = value;
                 this.selectedCatalog.data.todoList = todo;
+                io.save(this.selectedCatalog.prop, this.selectedCatalog.data);
+            },
+            saveHeaderChange(prop,value){
+                console.log('save change','title', prop, value);
+                let todo = this.title;
+                let res = todo[prop[0]];
+                for (let k = 1; k < prop.length; k++) {
+                    if (typeof res[prop[k]] === 'undefined') {
+                        res[prop[k]] = {};
+                    }
+                    res = res[prop[k]];
+                    console.log('in prop', res);
+                }
+                res = value;
+                this.selectedCatalog.data.title = todo;
                 io.save(this.selectedCatalog.prop, this.selectedCatalog.data);
             },
             collapsedSider() {

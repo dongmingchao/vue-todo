@@ -2,7 +2,7 @@
     <div class="mdui-appbar background">
         <div class="mdui-card" style="height: 100%;color: #fff">
             <div class="mdui-card-media" v-if="title">
-                <img src="../assets/flatland.jpg" class="background"/>
+                <img :src="title.bgimg" class="background"/>
                 <div class="mdui-card-media-covered mdui-card-media-covered-transparent">
                     <div class="mdui-card-primary">
                         <div class="mdui-card-primary-title">{{title.title}}</div>
@@ -10,7 +10,7 @@
                     </div>
                     <div class="mdui-card-actions actions">
                         <button class="mdui-btn mdui-ripple mdui-ripple-white" v-for="(ac,index) in title.actions"
-                                :key="index">{{ac.name}}
+                                :key="index" @click="doAction(ac)">{{ac.name}}
                         </button>
                         <a href="javascript:;" class="mdui-btn mdui-btn-icon">
                             <i class="mdui-icon material-icons">more_horiz</i>
@@ -24,7 +24,7 @@
                 </a>
             </div>
             <div class="mdui-card-menu">
-                <a href="javascript:;" class="mdui-btn mdui-btn-icon" @click="openFullscreenDialog">
+                <a href="javascript:;" class="mdui-btn mdui-btn-icon" @click="openFullscreenDialog(settings)">
                     <i class="mdui-icon material-icons">settings</i>
                 </a>
             </div>
@@ -33,41 +33,71 @@
             <div class="mdui-spinner mdui-spinner-colorful"></div>
         </div>
         <mu-dialog width="360" transition="slide-bottom" fullscreen :open.sync="openFullscreen">
-            <mu-appbar color="primary" title="设置">
+            <mu-appbar color="primary" :title="screenDialog.title">
                 <mu-button slot="left" icon @click="closeFullscreenDialog">
                     <mu-icon value="close"></mu-icon>
                 </mu-button>
-                <mu-button slot="right" flat  @click="closeFullscreenDialog">
-                    完成
+                <mu-button slot="right" icon @click="closeFullscreenDialog">
+                    <mu-icon value="check"></mu-icon>
                 </mu-button>
             </mu-appbar>
-            <div style="padding: 24px;">
-                这里放设置
-            </div>
+            <component :is="screenDialog.component" v-bind="screenDialog.beBind" ref="manager"/>
         </mu-dialog>
     </div>
 </template>
 
 <script>
     import mdui from 'mdui/dist/js/mdui';
+    import BgImageManager from "./bg-image-manager";
+    import SettingsManager from "./settings-manager";
 
     export default {
         name: "md-header",
+        components: {SettingsManager, BgImageManager},
         props: ['title', 'loading'],
-        data(){
+        data() {
             return {
-                openFullscreen: false
+                openFullscreen: false,
+                screenDialog: {},
+                settings: {
+                    title: '设置',
+                    component: SettingsManager
+                }
             }
         },
         mounted() {
             mdui.mutation();
         },
         methods: {
-            openFullscreenDialog () {
+            openFullscreenDialog(config) {
                 this.openFullscreen = true;
+                this.screenDialog = config;
             },
-            closeFullscreenDialog () {
+            closeFullscreenDialog() {
                 this.openFullscreen = false;
+                this.screenDialog = {};
+            },
+            doAction(action) {
+                console.log('do action', action);
+                switch (action.want) {
+                    case 'set-background-image': {
+                        this.openFullscreenDialog({
+                            title: '设置背景图片',
+                            beBind: {
+                                src:this.title.bgimg
+                            },
+                            component: BgImageManager
+                        });
+                        this.$nextTick(() => {
+                            this.$refs.manager.$on('bgImageChange',src => {
+                                console.log('bgImageChange',src);
+                                this.title.bgimg = src;
+                                this.$emit('settle', ['bgimg'], src);
+                            })
+                        });
+                    }
+
+                }
             }
         }
     }
