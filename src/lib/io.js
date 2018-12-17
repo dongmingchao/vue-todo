@@ -29,15 +29,15 @@ export default {
 
     /**
      *
-     * @param key
-     * @param url
+     * @param key 请求搜索的键名
+     * @param url 如果键名没有或过期，请求的url
      * @returns {Promise<*|string|HTMLElement|BodyInit|ReadableStream>}
      */
-    async autofetch(key,url){
+    async autofetch(key, url) {
         let local = await this.fetchObj(key);
         if (local === null) {
             local = await this.fetch(url);
-            this.save(key,local.data);
+            this.save(key, local.data);
         }
         return local.data.body;
     },
@@ -48,7 +48,7 @@ export default {
      * @returns {Promise<{data: *}>}
      */
     async fetch(url) {
-        let request = new Promise((r,j) => {
+        let request = new Promise((r, j) => {
             let oReq = new XMLHttpRequest();
             oReq.open("GET", url);
             oReq.send();
@@ -62,11 +62,38 @@ export default {
         return {data: res};
     },
 
+    /**
+     *
+     * @param {Object} options 各种参数都在这个选项
+     * @param {'GET'|'POST'}    options.method [options.method=GET] GET 或 POST请求
+     * @param {string}          options.url 请求的api
+     * @param {Object}               options.data 请求发送的数据
+     * @returns {Promise<*>} 请求返回的数据
+     */
+    async request(options) {
+        let request = new Promise((r, j) => {
+            let oReq = new XMLHttpRequest();
+            oReq.open(options.method, options.url);
+            oReq.setRequestHeader('content-type', 'application/json');
+            oReq.send(JSON.stringify(options.data));
+            oReq.onload = function () {
+                r(this.responseText);
+            };
+            oReq.onerror = function (ev) {
+                r({status: 'error', msg: ev});
+            }
+        });
+        let res = await request;
+        res = JSON.parse(res);
+        console.log('io:request', res);
+        return res;
+    },
+
     save(key, value) {
         let v = {expire: new Date().toJSON(), data: value};
         localforge.setItem(key, v);
     },
-    remove(key){
+    remove(key) {
         localforge.removeItem(key);
     },
 
@@ -86,6 +113,6 @@ export default {
             let res = await this.fetch(local.data.checkExpire);
             res = res.data;
             return res.expire <= local.expire;
-        }else return true;
+        } else return true;
     }
 }

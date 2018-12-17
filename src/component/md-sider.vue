@@ -1,6 +1,6 @@
 <template>
     <div class="mdui-drawer mdui-drawer-full-height" id="drawer">
-        <mu-list textline="two-line">
+        <mu-list style="margin-top: 20px" textline="two-line">
             <mu-list-item avatar>
                 <mu-list-item-action>
                     <mu-avatar>
@@ -8,11 +8,11 @@
                     </mu-avatar>
                 </mu-list-item-action>
                 <mu-list-item-content>
-                    <mu-list-item-title>头像</mu-list-item-title>
-                    <mu-list-item-sub-title>Jan 9, 2014</mu-list-item-sub-title>
+                    <mu-list-item-title>{{user.name}}</mu-list-item-title>
+                    <mu-list-item-sub-title>{{user.status}}</mu-list-item-sub-title>
                 </mu-list-item-content>
                 <mu-list-item-action>
-                    <mu-badge content="离线" color="error"></mu-badge>
+                    <mu-badge :content="user.shortStatus" :color="user.color"></mu-badge>
                     <mu-button icon>
                         <mu-icon value="refresh"></mu-icon>
                     </mu-button>
@@ -72,13 +72,20 @@
 
     export default {
         name: "md-sider",
-        props: ['drawer', 'list', 'loading'],
+        props: ['drawer', 'list', 'loading', 'st'],
         data() {
             return {
+                user: {},
                 menuopen: false,
                 trigger: null,
                 triggerIndex: 0,
                 create: null
+            }
+        },
+        watch: {
+            st(n){
+                this.user = n.user;
+                this.user.color = n.statusLED;
             }
         },
         mounted() {
@@ -114,6 +121,7 @@
                     let input = this.$refs.input[this.$refs.input.length - 1];
                     setTimeout(() => input.scrollIntoView(), 300);
                     input.focus();
+                    this.$emit('event:focus',input);
                 });
             },
             addCatalogFinish(e) {

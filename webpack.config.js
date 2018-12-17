@@ -84,6 +84,9 @@ module.exports = {
                 res.set({'Content-Type': 'application/javascript; charset=utf-8'});
                 res.send(fs.readFileSync('dist/service-worker.js'));
             });
+        },
+        proxy: {
+            '/api/': 'http://localhost:3000'
         }
     },
     performance: {

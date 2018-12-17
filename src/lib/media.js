@@ -2,6 +2,7 @@ export default class device {
     constructor(window) {
         this.cordova = window.cordova;
         this.notification = new Notification(window);
+        this.statusbar = window.StatusBar;
     }
 
     isAndroid() {

@@ -1,12 +1,16 @@
 <template>
     <div style="height: 100%;">
         <md-sider v-bind:drawer.sync="drawer"
+                  ref="drawer"
                   :list="sideList"
+                  :st="$refs.settings"
                   @changeCatalog="setCatalog"
                   @createCatalog="setNewCatalog"
+                  @event:focus="e => eKeyBoard(e,$refs.drawer)"
                   @delete="deleteCatalog"
                   :loading="loading.side"/>
         <md-header :title="title"
+                   :st="$refs.settings"
                    @settle="saveHeaderChange"
                    @openSide="collapsedSider"
                    :loading="loading.header"/>
@@ -16,8 +20,10 @@
                  @createTodo="setNewTodo"
                  @delete="deleteTodo"
                  @pushNotify="pushNotification"
+                 @event:focus="e => eKeyBoard(e,$refs.list)"
                  :is-expand="true"
                  placeholder="添加新的待做事项"/>
+        <main-setting ref="settings"/>
     </div>
 </template>
 <script>
@@ -28,10 +34,11 @@
     import io from '../lib/io';
     import moment from 'moment';
     import media from '../lib/media';
+    import MainSetting from "./main-setting";
 
     export default {
         name: 'main-container',
-        components: {MdList, MdSider, MdHeader},
+        components: {MainSetting, MdList, MdSider, MdHeader},
         data() {
             return {
                 items: [1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -44,7 +51,8 @@
                 selectedCatalog: null,
                 drawer: null,
                 sideList: null,
-                device: null
+                device: null,
+                mat: null
             };
         },
         computed: {
@@ -76,7 +84,7 @@
             saveTodoListChange(prop, value) {
                 // prop.unshift('todoList');
                 // prop.unshift(this.selectedCatalog.prop);
-                console.log('save change','todoList', prop, value);
+                console.log('save change', 'todoList', prop, value);
                 let todo = this.todoList;
                 let res = todo[prop[0]];
                 for (let k = 1; k < prop.length; k++) {
@@ -90,8 +98,8 @@
                 this.selectedCatalog.data.todoList = todo;
                 io.save(this.selectedCatalog.prop, this.selectedCatalog.data);
             },
-            saveHeaderChange(prop,value){
-                console.log('save change','title', prop, value);
+            saveHeaderChange(prop, value) {
+                console.log('save change', 'title', prop, value);
                 let todo = this.title;
                 let res = todo[prop[0]];
                 for (let k = 1; k < prop.length; k++) {
@@ -127,7 +135,7 @@
                 this.title = local.data.title;
                 this.todoList = local.data.todoList;
                 this.loading.header = false;
-                this.selectedCatalog = {prop: item.prop, data: local.data, index:this.todoList.indexOf(item)};
+                this.selectedCatalog = {prop: item.prop, data: local.data, index: this.todoList.indexOf(item)};
             },
             deleteTodo(todo) {
                 this.todoList.splice(this.todoList.indexOf(todo), 1);
@@ -144,6 +152,7 @@
                     "title": {
                         "title": item.label,
                         "date": date,
+                        "bgimg": "dist/flatland.jpg",
                         "actions": [
                             {
                                 "name": "排序"
@@ -172,23 +181,44 @@
                 io.save('side_list', {body: this.sideList});
             },
             pushNotification(target) {
-                let id = ''+this.selectedCatalog.index + target.index;
-                console.log('push notification', target, this.selectedCatalog, id);
-                this.device.notification.post({
-                    id: parseInt(id),
-                    title: target.label,
-                    text: target.content,
-                    trigger: {at: target.datetime}
-                });
+                let id = '' + this.selectedCatalog.index + target.index;
+                if (this.device) {
+                    this.device.notification.post({
+                        id: parseInt(id),
+                        title: target.label,
+                        text: target.content,
+                        trigger: {at: target.datetime}
+                    });
+                }
+            },
+            keyboardShow(e) {
+                console.log('Keyboard height is: ', e.keyboardHeight);
+                this.device.onKeyboardShow(e.keyboardHeight);
+            },
+            keyboardHide(e) {
+                this.mat.style.height = '0';
+            },
+            eKeyBoard(elm,body) {
+                body = body.$el;
+                console.log('capture focus', elm);
+                if (this.device) this.device.onKeyboardShow = height => {
+                    this.mat.style.height = height + 'px';
+                    if (body.lastChild !== this.mat) body.appendChild(this.mat);
+                    window.scrollTo(body.scrollWidth, body.scrollHeight);
+                }
             }
         },
         mounted() {
+            this.mat = document.createElement('div');
+            this.mat.style.width = '100%';
             this.getSideList().then(li => {
                 this.loading.side = false;
                 this.sideList = li;
                 this.setCatalog(li[1]);
             });
             document.addEventListener('deviceready', this.ready);
+            window.addEventListener('native.keyboardshow', this.keyboardShow);
+            window.addEventListener('native.keyboardhide', this.keyboardHide);
         }
     }
 </script>

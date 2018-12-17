@@ -9,7 +9,7 @@
                              @click="expandTodo(index)"
                              @check="check(item,index)"
                              ref="listItems"
-                             @contextmenu.native.prevent="longTap(item,index)"
+                             @contextmenu.native.prevent.stop="longTap(item,index)"
                              @pushNotify="pe => $emit('pushNotify',pe)"
                              :expand="isExpand">{{item.index}}
                     </md-line>
@@ -76,10 +76,9 @@
                     prefix: '随笔'
                 };
                 let todo = document.getElementById('newTodoArea');
-                console.log(todo);
                 this.$nextTick(() => {
-                    setTimeout(() => todo.scrollIntoView(), 300);
                     todo.focus();
+                    this.$emit('event:focus',todo);
                 });
             },
             longTap(e,i) {

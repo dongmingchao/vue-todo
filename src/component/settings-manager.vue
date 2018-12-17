@@ -4,18 +4,18 @@
             <mu-sub-header inset>用户</mu-sub-header>
             <mu-list-item avatar>
                 <mu-list-item-action>
-                    <mu-badge circle color="error" badge-class="login-status">
+                    <mu-badge circle :color="st.statusLED" badge-class="login-status">
                         <mu-avatar>
                             <img src="../assets/logo.png" alt="">
                         </mu-avatar>
                     </mu-badge>
                 </mu-list-item-action>
                 <mu-list-item-content>
-                    <mu-list-item-title>用户名</mu-list-item-title>
-                    <mu-list-item-sub-title>使用本地数据</mu-list-item-sub-title>
+                    <mu-list-item-title>{{user.name}}</mu-list-item-title>
+                    <mu-list-item-sub-title>{{user.status}}</mu-list-item-sub-title>
                 </mu-list-item-content>
                 <mu-list-item-action>
-                    <mu-button>
+                    <mu-button @click="openDialog(login)">
                         登陆
                     </mu-button>
                 </mu-list-item-action>
@@ -70,12 +70,43 @@
                 </mu-list-item-action>
             </mu-list-item>
         </mu-list>
+        <mu-dialog :open.sync="dialog" v-bind="dialog">
+            <component :is="dialog.component" :host="_self" v-if="dialog"/>
+        </mu-dialog>
     </mu-paper>
 </template>
 
 <script>
+    import LoginDialog from "./login-dialog";
+
     export default {
-        name: "settings-manager"
+        name: "settings-manager",
+        components: {LoginDialog},
+        props: ['st','beBind'],
+        beforeMount() {
+            this.user = this.st.user;
+        },
+        data() {
+            return {
+                dialog: null,
+                login: {
+                    'title': '使用网络同步',
+                    width: "600",
+                    'max-width': '80%',
+                    'esc-press-close': false,
+                    'overlay-close': false,
+                    component: LoginDialog
+                }
+            }
+        },
+        methods: {
+            openDialog(config) {
+                this.dialog = config;
+            },
+            closeDialog() {
+                this.dialog = null;
+            }
+        }
     }
 </script>
 
@@ -92,7 +123,7 @@
         overflow: hidden;
     }
 
-    .login-status{
+    .login-status {
         height: 10px !important;
         width: 10px !important;
         margin: 43px 13px;

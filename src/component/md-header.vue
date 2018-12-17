@@ -18,13 +18,15 @@
                     </div>
                 </div>
             </div>
-            <div class="mdui-card-menu sidebarAct">
-                <a href="javascript:;" class="mdui-btn mdui-btn-icon" @click="$emit('openSide')">
+            <div class="mdui-card-menu top-menu-row">
+                <a href="javascript:;"
+                   style="position: absolute;left: 16px"
+                   class="mdui-btn mdui-btn-icon" @click="$emit('openSide')">
                     <i class="mdui-icon material-icons">menu</i>
                 </a>
-            </div>
-            <div class="mdui-card-menu">
-                <a href="javascript:;" class="mdui-btn mdui-btn-icon" @click="openFullscreenDialog(settings)">
+                <a href="javascript:;"
+                   style="position: absolute;right: 16px"
+                   class="mdui-btn mdui-btn-icon" @click="st.openFullscreenDialog(settings)">
                     <i class="mdui-icon material-icons">settings</i>
                 </a>
             </div>
@@ -32,17 +34,6 @@
         <div class="loading curtain" :class="{'curtain-show':loading}">
             <div class="mdui-spinner mdui-spinner-colorful"></div>
         </div>
-        <mu-dialog width="360" transition="slide-bottom" fullscreen :open.sync="openFullscreen">
-            <mu-appbar color="primary" :title="screenDialog.title">
-                <mu-button slot="left" icon @click="closeFullscreenDialog">
-                    <mu-icon value="close"></mu-icon>
-                </mu-button>
-                <mu-button slot="right" icon @click="closeFullscreenDialog">
-                    <mu-icon value="check"></mu-icon>
-                </mu-button>
-            </mu-appbar>
-            <component :is="screenDialog.component" v-bind="screenDialog.beBind" ref="manager"/>
-        </mu-dialog>
     </div>
 </template>
 
@@ -53,12 +44,9 @@
 
     export default {
         name: "md-header",
-        components: {SettingsManager, BgImageManager},
-        props: ['title', 'loading'],
+        props: ['title', 'loading', 'st'],
         data() {
             return {
-                openFullscreen: false,
-                screenDialog: {},
                 settings: {
                     title: '设置',
                     component: SettingsManager
@@ -69,28 +57,20 @@
             mdui.mutation();
         },
         methods: {
-            openFullscreenDialog(config) {
-                this.openFullscreen = true;
-                this.screenDialog = config;
-            },
-            closeFullscreenDialog() {
-                this.openFullscreen = false;
-                this.screenDialog = {};
-            },
             doAction(action) {
                 console.log('do action', action);
                 switch (action.want) {
                     case 'set-background-image': {
-                        this.openFullscreenDialog({
+                        this.st.openFullscreenDialog({
                             title: '设置背景图片',
                             beBind: {
-                                src:this.title.bgimg
+                                src: this.title.bgimg
                             },
                             component: BgImageManager
                         });
                         this.$nextTick(() => {
-                            this.$refs.manager.$on('bgImageChange',src => {
-                                console.log('bgImageChange',src);
+                            this.st.$refs.manager.$on('bgImageChange', src => {
+                                console.log('bgImageChange', src);
                                 this.title.bgimg = src;
                                 this.$emit('settle', ['bgimg'], src);
                             })
@@ -98,6 +78,11 @@
                     }
 
                 }
+            }
+        },
+        watch: {
+            title() {
+                console.log('watch title', this.title);
             }
         }
     }
@@ -129,10 +114,6 @@
         margin: 0;
         height: 100%;
         width: 100%;
-    }
-
-    .sidebarAct {
-        left: 16px;
     }
 
     .background {
@@ -169,5 +150,11 @@
         -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
         will-change: opacity;
+    }
+
+    .top-menu-row {
+        width: 100%;
+        right: 0;
+        margin-top: 20px;
     }
 </style>

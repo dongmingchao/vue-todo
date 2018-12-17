@@ -9,8 +9,11 @@
                 {{item.label}}
             </mu-list-item-title>
             <mu-list-item-sub-title style="color: rgba(0, 0, 0, .87)" v-if="item.prefix">
-                <mu-chip class="tag-chip" color="primary" @click.stop="tapChip">
-                    {{item.prefix}}
+                <mu-chip class="tag-chip"
+                         color="primary"
+                         @click.stop="tapChip"
+                         v-for="(chip,index) in item.prefix" :key="index">
+                    {{chip}}
                 </mu-chip>
             </mu-list-item-sub-title>
             <mu-list-item-sub-title v-if="item.content">

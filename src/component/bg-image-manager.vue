@@ -2,7 +2,7 @@
     <div>
         <div class="mdui-card" style="margin: 15px" v-for="each in localImages">
             <div class="mdui-card-media">
-                <img :src="each.src"/>
+                <img :src="each.src" style="min-height: 150px;"/>
                 <div class="mdui-card-media-covered">
                     <div class="mdui-card-primary">
                         <div class="mdui-card-primary-subtitle">{{each.name}}</div>
@@ -19,7 +19,7 @@
 <script>
     export default {
         name: "bg-image-manager",
-        props: ['src'],
+        props: ['beBind'],
         data() {
             return {
                 localImages: [{
@@ -39,7 +39,7 @@
             }
         },
         mounted(){
-            this.nowSrc = this.src;
+            this.nowSrc = this.beBind.src;
         }
     }
 </script>
