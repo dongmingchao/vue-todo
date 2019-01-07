@@ -73,7 +73,7 @@
                 this.create = {
                     favorite: false,
                     repeats: '无',
-                    prefix: '随笔'
+                    prefix: ['随笔']
                 };
                 let todo = document.getElementById('newTodoArea');
                 this.$nextTick(() => {

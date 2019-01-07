@@ -150,11 +150,7 @@
                     this.$emit('update:item', item);
                     this.$forceUpdate();
                 }
-                item.steps.push({
-                    label: str,
-                    favorite: false,
-                    repeats: '无'
-                });
+                item.steps.push(str);
                 this.$emit('settle', 'steps', item.steps);
             },
             toggle(val) {
