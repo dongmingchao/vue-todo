@@ -1,5 +1,5 @@
 <template>
-    <mu-paper :z-depth="1" class="demo-list-wrap">
+    <mu-paper :z-depth="1">
         <mu-list textline="two-line">
             <mu-sub-header inset>用户</mu-sub-header>
             <mu-list-item avatar>
@@ -39,6 +39,66 @@
         <mu-divider inset></mu-divider>
         <mu-list textline="two-line">
             <mu-sub-header inset>管理</mu-sub-header>
+            <mu-list-item avatar button>
+                <mu-list-item-action>
+                    <mu-avatar color="blue">
+                        <mu-icon value="assignment"></mu-icon>
+                    </mu-avatar>
+                </mu-list-item-action>
+                <mu-list-item-content>
+                    <mu-list-item-title>标签库</mu-list-item-title>
+                </mu-list-item-content>
+                <mu-list-item-action>
+                    <mu-button icon>
+                        <mu-icon value="info"></mu-icon>
+                    </mu-button>
+                </mu-list-item-action>
+            </mu-list-item>
+            <mu-list-item avatar button>
+                <mu-list-item-action>
+                    <mu-avatar color="blue">
+                        <mu-icon value="assignment"></mu-icon>
+                    </mu-avatar>
+                </mu-list-item-action>
+                <mu-list-item-content>
+                    <mu-list-item-title>标签库</mu-list-item-title>
+                </mu-list-item-content>
+                <mu-list-item-action>
+                    <mu-button icon>
+                        <mu-icon value="info"></mu-icon>
+                    </mu-button>
+                </mu-list-item-action>
+            </mu-list-item>
+            <mu-list-item avatar button>
+                <mu-list-item-action>
+                    <mu-avatar color="blue">
+                        <mu-icon value="assignment"></mu-icon>
+                    </mu-avatar>
+                </mu-list-item-action>
+                <mu-list-item-content>
+                    <mu-list-item-title>标签库</mu-list-item-title>
+                </mu-list-item-content>
+                <mu-list-item-action>
+                    <mu-button icon>
+                        <mu-icon value="info"></mu-icon>
+                    </mu-button>
+                </mu-list-item-action>
+            </mu-list-item>
+            <mu-list-item avatar button>
+                <mu-list-item-action>
+                    <mu-avatar color="blue">
+                        <mu-icon value="assignment"></mu-icon>
+                    </mu-avatar>
+                </mu-list-item-action>
+                <mu-list-item-content>
+                    <mu-list-item-title>标签库</mu-list-item-title>
+                </mu-list-item-content>
+                <mu-list-item-action>
+                    <mu-button icon>
+                        <mu-icon value="info"></mu-icon>
+                    </mu-button>
+                </mu-list-item-action>
+            </mu-list-item>
             <mu-list-item avatar button>
                 <mu-list-item-action>
                     <mu-avatar color="blue">
@@ -111,18 +171,6 @@
 </script>
 
 <style>
-    @media (max-width: 680px) {
-        .demo-list-wrap {
-            margin: 0;
-        }
-    }
-
-    .demo-list-wrap {
-        max-width: 680px;
-        margin: 0 auto;
-        overflow: hidden;
-    }
-
     .login-status {
         height: 10px !important;
         width: 10px !important;

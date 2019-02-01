@@ -12,6 +12,7 @@
             </mu-button>
         </mu-appbar>
         <component :is="screenDialog.component"
+                   class="list-wrap"
                    :st="_self"
                    :beBind="screenDialog.beBind" ref="manager"/>
     </mu-dialog>
@@ -72,5 +73,16 @@
 </script>
 
 <style scoped>
+    .list-wrap {
+        overflow-x: hidden;
+        height: calc(100% - 84px);
+        position: absolute;
+        width: 100%;
+    }
 
+    @media (max-width: 600px) {
+        .list-wrap {
+            height: calc(100% - 76px);
+        }
+    }
 </style>

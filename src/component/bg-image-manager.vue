@@ -17,6 +17,9 @@
 </template>
 
 <script>
+    import dusk from '../assets/dusk.jpg';
+    import flatland from '../assets/flatland.jpg';
+
     export default {
         name: "bg-image-manager",
         props: ['beBind'],
@@ -24,10 +27,10 @@
             return {
                 localImages: [{
                     name: '血色黎明',
-                    src: 'dist/dusk.jpg'
+                    src: dusk
                 }, {
                     name: '原谅色平原',
-                    src: 'dist/flatland.jpg'
+                    src: flatland
                 }],
                 nowSrc: null
             }
