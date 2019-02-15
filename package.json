@@ -11,6 +11,8 @@
     "h5": "cross-env-shell bash build.sh"
   },
   "dependencies": {
+    "coffee-loader": "^0.9.0",
+    "coffeescript": "^2.3.2",
     "localforage": "^1.7.2",
     "mdui": "^0.4.1",
     "moment": "^2.22.2",

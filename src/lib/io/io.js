@@ -15,7 +15,6 @@ export default {
      *          object: 返回最新的这个值
      */
     async fetchObj(key) {
-        console.log('io:fetch object', key);
         let update = await this.isUpdate(key);
         if (update === null) return null;
         if (update === false) {
@@ -24,6 +23,7 @@ export default {
             this.save(key, v);
         }
         let local = await localforge.getItem(key);
+	    console.log('io:fetch object', key, local);
         return local;
     },
 
@@ -74,13 +74,16 @@ export default {
         let request = new Promise((r, j) => {
             let oReq = new XMLHttpRequest();
             oReq.open(options.method, options.url);
-            oReq.setRequestHeader('content-type', 'application/json');
+            oReq.setRequestHeader('Content-Type', 'application/json');
             oReq.send(JSON.stringify(options.data));
             oReq.onload = function () {
-                r(this.responseText);
+                if (oReq.status === 200)
+                    r(this.responseText);
+                else
+                	j({ status:'net error', code:oReq.status });
             };
             oReq.onerror = function (ev) {
-                r({status: 'error', msg: ev});
+                j({status: 'error', msg: ev});
             }
         });
         let res = await request;

@@ -6,6 +6,7 @@
                   :st="$refs.settings"
                   @changeCatalog="setCatalog"
                   @createCatalog="setNewCatalog"
+                  @refresh="refreshCatalog"
                   @event:focus="e => eKeyBoard(e,$refs.drawer)"
                   @delete="deleteCatalog"
                   :loading="loading.side"/>
@@ -24,6 +25,10 @@
                  :is-expand="true"
                  placeholder="添加新的待做事项"/>
         <main-setting ref="settings"/>
+        <mu-snackbar position="bottom-end" :color="toast.color" :open.sync="toast.open">
+            {{toast.message}}
+            <mu-button flat slot="action" color="#fff" @click="toast.open = false">关闭</mu-button>
+        </mu-snackbar>
     </div>
 </template>
 <script>
@@ -31,7 +36,8 @@
 	import MdHeader from "./md-header";
 	import MdSider from "./md-sider";
 	import MdList from "./md-list";
-	import io from '../lib/io';
+	import {io, Sync} from '../lib/io/index';
+	import config from '../lib/config';
 	import moment from 'moment';
 	import media from '../lib/media';
 	import MainSetting from "./main-setting";
@@ -54,7 +60,13 @@
 				drawer: null,
 				sideList: null,
 				device: null,
-				mat: null
+				mat: null,
+				toast: {
+					open: false,
+					color: 'secondary',
+					message: ''
+				},
+				sync: null
 			};
 		},
 		computed: {
@@ -78,27 +90,40 @@
 			}
 		},
 		methods: {
+			postToast(opts) {
+				this.toast = Object.assign(this.toast, opts);
+				this.toast.open = true;
+				setTimeout(() => {
+					this.toast.open = false;
+				}, 3000);
+			},
 			/**
 			 *
 			 * @param prop{Array} 可以定位改变位置的属性链keys
 			 * @param value
 			 */
-			saveTodoListChange(prop, value) {
-				// prop.unshift('todoList');
-				// prop.unshift(this.selectedCatalog.prop);
-				console.log('save change', 'todoList', prop, value);
-				let todo = this.todoList;
-				let res = todo[prop[0]];
-				for (let k = 1; k < prop.length; k++) {
-					if (typeof res[prop[k]] === 'undefined') {
-						res[prop[k]] = {};
+			async saveRing(prop, value) {
+				let storgae = await io.fetchObj(prop[0]);
+				if (storgae === null) return;
+				let res = storgae.data;
+				let key = prop[1];
+				for (let k = 1; k < prop.length - 1; k++) {
+					if (typeof res[key] === 'undefined') {
+						res[key] = {};
 					}
-					res = res[prop[k]];
-					console.log('in prop', res);
+					res = res[key];
+					key = prop[k + 1];
 				}
-				res = value;
-				this.selectedCatalog.data.todoList = todo;
-				io.save(this.selectedCatalog.prop, this.selectedCatalog.data);
+				res[key] = value;
+				console.log('save ring', res, key, value);
+				io.save(prop[0], storgae.data);
+			},
+
+			saveTodoListChange(prop, value) {
+				prop.unshift('todoList');
+				prop.unshift(this.selectedCatalog.prop);
+				console.log('save change', 'todoList', prop, value);
+				this.saveRing(prop, value);
 			},
 			saveHeaderChange(prop, value) {
 				console.log('save change', 'title', prop, value);
@@ -119,13 +144,47 @@
 				console.log('click open side menu');
 				this.drawer.toggle();
 			},
-			setNewTodo(str) {
-				console.log('set new todo list event', str);
-				this.todoList.push(str);
+			setNewTodo(ntd) {
+				console.log('set new todo list event', ntd);
+				this.sync.tasks.add(this.selectedCatalog.prop, ntd);
+				this.todoList.push(ntd);
 				this.selectedCatalog.data.todoList = this.todoList;
 				io.save(this.selectedCatalog.prop, this.selectedCatalog.data);
 			},
+			async refreshCatalog() {
+				let netCatalog = await this.sync.catalogs.list();
+				console.log('net catalog', netCatalog);
+				for (let each of netCatalog) {
+					let sideL;
+					if (each.type === null) sideL = this.sideList[1].children;
+					else for (let eside of this.sideList) {
+						if (eside.label === each.type)
+							sideL = eside.children;
+					}
+					let hasCatalogs = [];
+					for (let sideSon of sideL)
+						hasCatalogs.push(sideSon.prop);
+					if (!hasCatalogs.includes(each.id))
+						sideL.push({
+							icon: each.icon,
+							label: each.label,
+							prop: each.id
+						});
+					io.save(each.id, {
+						title: {
+							title: each.label,
+							datetime: each.date,
+							date: moment(each.date).format('MMMDo dddd'),
+							bgimg: each.bgimg,
+							actions: each.actions
+						},
+						todoList: null
+					});
+				}
+				io.save('side_list', {body: this.sideList});
+			},
 			async setCatalog(item) {
+				console.log('set catalog', item);
 				if (typeof item.prop === 'undefined') return;
 				this.loading.header = true;
 				let local = await io.fetchObj(item.prop);
@@ -137,12 +196,18 @@
 					io.save(item.prop, local.data);
 				}
 				this.title = local.data.title;
-				this.todoList = local.data.todoList;
+				let list = local.data.todoList;
+				if (list === null) {
+					list = await this.sync.tasks.list(item.prop);
+					this.saveRing([item.prop, 'todoList'], list);
+				}
+				this.todoList = list;
 				this.loading.header = false;
-				this.selectedCatalog = {prop: item.prop, data: local.data, index: this.todoList.indexOf(item)};
+				this.selectedCatalog = {prop: item.prop, data: local.data, index: this.sideList.indexOf(item)};
 			},
 			deleteTodo(todo) {
 				this.todoList.splice(this.todoList.indexOf(todo), 1);
+				this.sync.tasks.remove(todo);
 				this.selectedCatalog.data.todoList = this.todoList;
 				io.save(this.selectedCatalog.prop, this.selectedCatalog.data);
 			},
@@ -151,16 +216,18 @@
 			// },
 			setNewCatalog(item) {
 				let local = {};
-				let date = moment().format('MMMDo dddd');
+				let datetime = moment().toJSON();
+				let date = moment(datetime).format('MMMDo dddd');
 				local = {
 					"title": {
 						"title": item.label,
 						"date": date,
+						"datetime": datetime,
 						"bgimg": flatland,
 						"actions": [
-							{
-								"name": "排序"
-							},
+							// {
+							// 	"name": "排序"
+							// },
 							{
 								"name": "设置背景图"
 							}
@@ -168,8 +235,10 @@
 					},
 					"todoList": []
 				};
-				io.save(item.prop, local);
+				io.save(item.prop + '|' + datetime, local);
 				io.save('side_list', {body: this.sideList});
+				item.date = datetime;
+				this.sync.catalogs.add(item);
 			},
 			ready(e) {
 				console.log('Vue中 设备已就绪', e);
@@ -213,14 +282,19 @@
 			}
 		},
 		mounted() {
+			this.sync = new Sync(this);
 			this.mat = document.createElement('div');
 			this.mat.style.width = '100%';
-			// this.getSideList().then(li => {
-			let li = init.body;
-			this.loading.side = false;
-			this.sideList = li;
-			this.setCatalog(li[1]);
-			// });
+			io.fetchObj('side_list').then(ret => {
+				let li;
+				if (ret === null)
+					li = init.body;
+				else li = ret.data.body;
+				this.loading.side = false;
+				this.sideList = li;
+				this.setCatalog(li[0].children[0]);
+				io.save('side_list', {body: this.sideList});
+			});
 			document.addEventListener('deviceready', this.ready);
 			window.addEventListener('native.keyboardshow', this.keyboardShow);
 			window.addEventListener('native.keyboardhide', this.keyboardHide);
@@ -235,6 +309,7 @@
 
     .main-list {
         height: calc(100% - 10rem);
+        overflow-y: scroll;
     }
 
     @media (min-width: 1023px) {

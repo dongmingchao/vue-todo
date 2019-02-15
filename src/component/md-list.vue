@@ -71,9 +71,13 @@
         methods: {
             createNewTodo() {
                 this.create = {
+                	createdAt: new Date(),
                     favorite: false,
                     repeats: '无',
-                    prefix: ['随笔']
+                    tags: [{
+                    	label: '随笔',
+                        color: 'primary'
+                    }]
                 };
                 let todo = document.getElementById('newTodoArea');
                 this.$nextTick(() => {

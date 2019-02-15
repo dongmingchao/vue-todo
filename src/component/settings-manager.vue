@@ -4,7 +4,7 @@
             <mu-sub-header inset>用户</mu-sub-header>
             <mu-list-item avatar>
                 <mu-list-item-action>
-                    <mu-badge circle :color="st.statusLED" badge-class="login-status">
+                    <mu-badge circle :color="user.statusLED" badge-class="login-status">
                         <mu-avatar>
                             <img src="../assets/logo.png" alt="">
                         </mu-avatar>
@@ -15,7 +15,10 @@
                     <mu-list-item-sub-title>{{user.status}}</mu-list-item-sub-title>
                 </mu-list-item-content>
                 <mu-list-item-action>
-                    <mu-button @click="openDialog(login)">
+                    <mu-button v-if="user.shortStatus === '在线'">
+                        注销
+                    </mu-button>
+                    <mu-button v-else @click="openDialog(login)">
                         登陆
                     </mu-button>
                 </mu-list-item-action>
@@ -133,6 +136,10 @@
         <mu-dialog :open.sync="dialog" v-bind="dialog">
             <component :is="dialog.component" :host="_self" v-if="dialog"/>
         </mu-dialog>
+        <mu-snackbar position="bottom-end" :color="toast.color" :open.sync="toast.open">
+            {{toast.message}}
+            <mu-button flat slot="action" color="#fff" @click="toast.open = false">关闭</mu-button>
+        </mu-snackbar>
     </mu-paper>
 </template>
 
@@ -156,10 +163,22 @@
                     'esc-press-close': false,
                     'overlay-close': false,
                     component: LoginDialog
-                }
+                },
+	            toast: {
+		            open: false,
+		            color: 'secondary',
+		            message: ''
+	            }
             }
         },
         methods: {
+	        postToast(opts) {
+		        this.toast = Object.assign(this.toast, opts);
+		        this.toast.open = true;
+		        setTimeout(() => {
+			        this.toast.open = false;
+		        }, 3000);
+	        },
             openDialog(config) {
                 this.dialog = config;
             },

@@ -1,8 +1,8 @@
 <template>
     <mu-container>
         <mu-form ref="form" :model="validateForm">
-            <mu-form-item label="邮箱" prop="name" :rules="usernameRules">
-                <mu-text-field v-model="validateForm.name" prop="name"></mu-text-field>
+            <mu-form-item label="邮箱" prop="username" :rules="usernameRules">
+                <mu-text-field v-model="validateForm.username" prop="username"></mu-text-field>
             </mu-form-item>
             <mu-form-item label="密码" help-text="密码长度在6到20位，至少包含两种类型" prop="password" :rules="passwordRules">
                 <mu-text-field type="password" v-model="validateForm.password" prop="password"></mu-text-field>
@@ -26,115 +26,103 @@
                 <mu-button @click="cancel">取消</mu-button>
             </mu-form-item>
         </mu-form>
-        <mu-snackbar position="bottom-end" :color="toast.color" :open.sync="toast.open">
-            {{toast.message}}
-            <mu-button flat slot="action" color="#fff" @click="toast.open = false">关闭</mu-button>
-        </mu-snackbar>
     </mu-container>
 </template>
 <script>
-    import io from '../lib/io';
-    import config from '../lib/config';
+	import { io } from '../lib/io/';
+	import config from '../lib/config';
 
-    export default {
-        name: "login-dialog",
-        props: ['host'],
-        data() {
-            return {
-                loading: {
-                    login: false,
-                    sign: false
-                },
-                usernameRules: [
-                    {validate: (val) => !!val, message: '必须填写登陆邮箱'},
-                    {validate: emailValidate, message: '邮箱格式不合法'}
-                ],
-                passwordRules: [
-                    {validate: (val) => !!val, message: '必须填写密码'},
-                    {validate: (val) => val.length >= 6 && val.length <= 20, message: '密码长度大于6小于20'}
-                ],
-                argeeRules: [{validate: (val) => !!val, message: '必须同意用户协议'}],
-                validateForm: {
-                    name: '',
-                    password: '',
-                    isAgree: false
-                },
-                toast: {
-                    open: false,
-                    color: 'secondary',
-                    message: ''
-                }
-            }
-        },
-        methods: {
-            postToast(opts) {
-                this.toast = Object.assign(this.toast, opts);
-                this.toast.open = true;
-                setTimeout(() => {
-                    this.toast.open = false;
-                }, 3000);
-            },
-            async submit() {
-                let pass = await this.$refs.form.validate();
-                if (pass) {
-                    this.loading.login = true;
-                    let ret = await io.request({
-                        method: 'POST',
-                        url: config.host + config.login.api,
-                        data: this.validateForm
-                    });
-                    if (ret.status === 'success') {
-                        this.postToast({message: '登陆成功', color: 'success'});
-                        this.host.closeDialog();
-                    } else if (ret.status === 'error') {
-                        if (ret.msg === 'not found') {
-                            this.postToast({message: '请检查您的用户名和密码', color: 'error'});
-                        }
-                    }
-                    this.loading.login = false;
-                }
-            },
-            async signup() {
-                let pass = await this.$refs.form.validate();
-                if (pass) {
-                    this.loading.sign = true;
-                    let ret = await io.request({
-                        method: 'POST',
-                        url: config.host + config.signUp.api,
-                        data: {
-                            account: this.validateForm.name,
-                            password: this.validateForm.password,
-                        }
-                    });
-                    console.log('resp', ret);
-                    if (ret.status === 'success') {
-                        this.postToast({message: '注册成功', color: 'success'});
-                        this.host.closeDialog();
-                    }
-                    this.loading.sign = false;
-                }
-            },
-            clear() {
-                this.$refs.form.clear();
-                this.validateForm = {
-                    username: '',
-                    password: '',
-                    isAgree: false
-                };
-            },
-            cancel() {
-                this.host.closeDialog();
-            }
-        }
-    };
+	export default {
+		name: "login-dialog",
+		props: ['host'],
+		data() {
+			return {
+				loading: {
+					login: false,
+					sign: false
+				},
+				usernameRules: [
+					{validate: (val) => !!val, message: '必须填写登陆邮箱'},
+					{validate: emailValidate, message: '邮箱格式不合法'}
+				],
+				passwordRules: [
+					{validate: (val) => !!val, message: '必须填写密码'},
+					{validate: (val) => val.length >= 6 && val.length <= 20, message: '密码长度大于6小于20'}
+				],
+				argeeRules: [{validate: (val) => !!val, message: '必须同意用户协议'}],
+				validateForm: {
+					username: '',
+					password: '',
+					isAgree: false
+				}
+			}
+		},
+		methods: {
+			async submit() {
+				let pass = await this.$refs.form.validate();
+				if (pass) {
+					this.loading.login = true;
+					let ret = await io.request({
+						method: 'POST',
+						url: config.host + config.user.login.api,
+						data: this.validateForm
+					});
+					if (ret.status === 'success') {
+						this.host.postToast({message: '登陆成功', color: 'success'});
+						this.host.$emit('change-user', config.loginSuccess(ret.user));
+						this.host.closeDialog();
+					} else if (ret.status === 'error') {
+						switch (ret.msg) {
+							case 'not found':
+								this.host.postToast({message: '请检查您的用户名和密码'});
+								break;
+							case 'wrong password':
+								this.host.postToast({message: '密码错误，请重新输入'});
+								break;
+						}
+					}
+					this.loading.login = false;
+				}
+			},
+			async signup() {
+				let pass = await this.$refs.form.validate();
+				if (pass) {
+					this.loading.sign = true;
+					let ret = await io.request({
+						method: 'POST',
+						url: config.host + config.user.signUp.api,
+						data: this.validateForm
+					});
+					console.log('resp', ret);
+					if (ret.status === 'success') {
+						this.host.postToast({message: '注册成功', color: 'success'});
+						this.host.$emit('change-user', config.loginSuccess(ret.user));
+						this.host.closeDialog();
+					}
+					this.loading.sign = false;
+				}
+			},
+			clear() {
+				this.$refs.form.clear();
+				this.validateForm = {
+					username: '',
+					password: '',
+					isAgree: false
+				};
+			},
+			cancel() {
+				this.host.closeDialog();
+			}
+		}
+	};
 
-    function emailValidate(val) {
-        return val.match(/\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/g);
-    }
+	function emailValidate(val) {
+		return val.match(/\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/g);
+	}
 
-    function passwdValidate(val) {
-        return val.match(/^[a-zA-Z0-9]+$/g);
-    }
+	function passwdValidate(val) {
+		return val.match(/^[a-zA-Z0-9]+$/g);
+	}
 </script>
 <style>
 

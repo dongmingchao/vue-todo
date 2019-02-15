@@ -8,12 +8,12 @@
                 <slot/>
                 {{item.label}}
             </mu-list-item-title>
-            <mu-list-item-sub-title style="color: rgba(0, 0, 0, .87)" v-if="item.prefix">
+            <mu-list-item-sub-title style="color: rgba(0, 0, 0, .87)" v-if="item.tags">
                 <mu-chip class="tag-chip"
-                         color="primary"
+                         :color="chip.color"
                          @click.stop="tapChip"
-                         v-for="(chip,index) in item.prefix" :key="index">
-                    {{chip}}
+                         v-for="(chip,index) in item.tags" :key="index">
+                    {{chip.label}}
                 </mu-chip>
             </mu-list-item-sub-title>
             <mu-list-item-sub-title v-if="item.content">
@@ -49,7 +49,7 @@
             <mu-select label="设置重复"
                        icon="today"
                        v-model="item.repeats"
-                       @change="$emit('settle','repeat',item.repeats)"
+                       @change="$emit('settle','repeats',item.repeats)"
                        full-width label-float>
                 <mu-option v-for="(term,index) in repeatTerm" avatar :key="index" :label="term.label"
                            :value="term.label">
@@ -65,11 +65,12 @@
             </mu-select>
         </mu-list-item>
         <mu-list-item slot="nested" button>
-            <mu-text-field icon="note"
-                           v-model="item.note"
-                           label="添加笔记"
-                           @change="$emit('settle','note',item.note)"
-                           label-float multi-line :rows="3" full-width></mu-text-field>
+            <mu-button color="primary">添加笔记</mu-button>
+            <!--<mu-text-field icon="note"-->
+                           <!--v-model="item.note"-->
+                           <!--label="添加笔记"-->
+                           <!--@change="$emit('settle','note',item.note)"-->
+                           <!--label-float multi-line :rows="3" full-width></mu-text-field>-->
         </mu-list-item>
         <!--<mu-button color="secondary"-->
                    <!--ref="deleteButton"-->
@@ -130,7 +131,10 @@
         methods: {
             loadInit() {
                 if (this.item.time) this.time = new Date(this.item.time);
-                if (this.item.date) this.date = new Date(this.item.date);
+                if (this.item.date) {
+                	console.log('read date',this.item.date);
+                	this.date = new Date(this.item.date);
+                }
             },
             clickBody(e) {
                 console.log('click todo line body', e);

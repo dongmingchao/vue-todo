@@ -26,7 +26,7 @@
                 </a>
                 <a href="javascript:;"
                    style="position: absolute;right: 16px"
-                   class="mdui-btn mdui-btn-icon" @click="st.openFullscreenDialog(settings)">
+                   class="mdui-btn mdui-btn-icon" @click="openSettings">
                     <i class="mdui-icon material-icons">settings</i>
                 </a>
             </div>
@@ -47,16 +47,18 @@
         props: ['title', 'loading', 'st'],
         data() {
             return {
-                settings: {
-                    title: '设置',
-                    component: SettingsManager
-                }
             }
         },
         mounted() {
             mdui.mutation();
         },
         methods: {
+        	openSettings(){
+		        this.st.openFullscreenDialog({
+			        title: '设置'
+		        });
+		        this.$router.push('/settings/manager');
+            },
             doAction(action) {
                 console.log('do action', action);
                 switch (action.want) {
@@ -65,9 +67,9 @@
                             title: '设置背景图片',
                             beBind: {
                                 src: this.title.bgimg
-                            },
-                            component: BgImageManager
+                            }
                         });
+                        this.$router.push('/settings/bg-image');
                         this.$nextTick(() => {
                             this.st.$refs.manager.$on('bgImageChange', src => {
                                 console.log('bgImageChange', src);

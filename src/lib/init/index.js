@@ -6,52 +6,54 @@ export default {
 	"checkExpire": "./apis/expire.json",
 	"body": [
 		{
-			"type": "title",
-			"label": "普通分类"
+			"label": "普通分类",
+			children: [
+				{
+					"icon": "move_to_inbox",
+					"label": "归档",
+					"path": document,
+					"prop": "document"
+				},
+				{
+					"icon": "star",
+					"label": "收藏",
+					"path": "./apis/marked.json",
+					"prop": "marked"
+				},
+				{
+					"icon": "email",
+					"label": "日记",
+					"path": "./apis/diary.json",
+					"prop": "diary"
+				},
+				{
+					"icon": "backup",
+					"label": "云端",
+					"path": cloud,
+					"prop": "cloud"
+				}]
 		},
 		{
-			"icon": "move_to_inbox",
-			"label": "归档",
-			"path": document,
-			"prop": "document"
+			"label": "自定义清单",
+			children: [
+				{
+					"icon": "book",
+					"label": "草稿",
+					"path": "./apis/draft.json",
+					"prop": "draft"
+				}
+			]
 		},
 		{
-			"icon": "star",
-			"label": "收藏",
-			"path": "./apis/marked.json",
-			"prop": "marked"
-		},
-		{
-			"icon": "email",
-			"label": "日记",
-			"path": "./apis/diary.json",
-			"prop": "diary"
-		},
-		{
-			"icon": "backup",
-			"label": "云端",
-			"path": cloud,
-			"prop": "cloud"
-		},
-		{
-			"type": "title",
-			"label": "自定义清单"
-		},
-		{
-			"icon": "book",
-			"label": "草稿",
-			"path": "./apis/draft.json",
-			"prop": "draft"
-		},
-		{
-			"type": "title",
-			"label": "清单管理"
-		},
-		{
-			"type": "add"
-		},
-		{
-			"type": "manage"
+			"label": "清单管理",
+			children: [
+				{
+					"type": "add"
+				},
+				{
+					"type": "manage"
+				}
+			]
 		}
 	]
 }

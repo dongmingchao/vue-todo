@@ -60,6 +60,10 @@ module.exports = {
                 loader: 'babel-loader',
                 exclude: /node_modules/
             },
+            {
+		        test: /\.coffee$/,
+		        use: ['coffee-loader']
+	        },
 	        {
 		        test: /\.(png|jpg|gif|svg)$/,
 		        loader: 'file-loader',
@@ -98,7 +102,10 @@ module.exports = {
             });
         },
         proxy: {
-            '/api/': 'http://localhost:3000'
+	        '/api/': {
+		        target: 'http://localhost:3000',
+		        pathRewrite: {'^/api' : ''}
+	        }
         }
     },
     performance: {

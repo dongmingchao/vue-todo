@@ -12,8 +12,8 @@
                     <mu-list-item-sub-title>{{user.status}}</mu-list-item-sub-title>
                 </mu-list-item-content>
                 <mu-list-item-action>
-                    <mu-badge :content="user.shortStatus" :color="user.color"></mu-badge>
-                    <mu-button icon>
+                    <mu-badge :content="user.shortStatus" :color="user.statusLED"></mu-badge>
+                    <mu-button icon @click="$emit('refresh')">
                         <mu-icon value="refresh"></mu-icon>
                     </mu-button>
                 </mu-list-item-action>
@@ -23,30 +23,34 @@
             <mu-linear-progress></mu-linear-progress>
         </div>
         <ul class="mdui-list" ref="list">
-            <template v-for="(item,index) in list">
-                <li class="mdui-subheader" v-if="item.type==='title'">{{item.label}}</li>
-                <li class="mdui-list-item mdui-ripple" v-else-if="item.type==='add'" @click="addCatalog">
-                    <i class="mdui-list-item-icon mdui-icon material-icons">playlist_add</i>
-                    <div class="mdui-list-item-content">添加清单</div>
-                </li>
-                <li class="mdui-list-item mdui-ripple" v-else-if="item.type==='manage'">
-                    <i class="mdui-list-item-icon mdui-icon material-icons">playlist_add_check</i>
-                    <div class="mdui-list-item-content">管理清单和标签</div>
-                </li>
-                <li class="mdui-list-item mdui-ripple" v-else
-                    @contextmenu.prevent="longTap(index)"
-                    @click="changeCatalog(item)">
-                    <i class="mdui-list-item-icon mdui-icon material-icons">{{item.icon}}</i>
-                    <div class="mdui-list-item-content">
-                        {{item.edit?null:item.label}}
-                        <div class="mdui-textfield" style="padding: 0" v-show="item.edit">
-                            <input class="mdui-textfield-input" @keydown.enter="addCatalogFinish"
-                                   @blur="addCatalogFinish"
-                                   ref="input"
-                                   placeholder="标题"/>
+            <template v-for="(each,oi) in list">
+                <li class="mdui-subheader">{{each.label}}</li>
+                <template v-for="(item,ei) in each.children">
+                    <li class="mdui-list-item mdui-ripple" v-if="item.type==='add'" @click="addCatalog">
+                        <i class="mdui-list-item-icon mdui-icon material-icons">playlist_add</i>
+                        <div class="mdui-list-item-content">添加清单</div>
+                    </li>
+                    <li class="mdui-list-item mdui-ripple" v-else-if="item.type==='manage'">
+                        <i class="mdui-list-item-icon mdui-icon material-icons">playlist_add_check</i>
+                        <div class="mdui-list-item-content">管理清单和标签</div>
+                    </li>
+                    <li class="mdui-list-item mdui-ripple" v-else
+                        @contextmenu.prevent="longTap(oi,ei)"
+                        data-header=""
+                        @click="changeCatalog(item)">
+                        <i class="mdui-list-item-icon mdui-icon material-icons">{{item.icon}}</i>
+                        <div class="mdui-list-item-content">
+                            {{item.edit?null:item.label}}
+                            <div class="mdui-textfield" style="padding: 0" v-show="item.edit">
+                                <input class="mdui-textfield-input"
+                                       @keydown.stop.enter="addCatalogFinish"
+                                       @blur.stop="addCatalogFinish"
+                                       ref="input"
+                                       placeholder="标题"/>
+                            </div>
                         </div>
-                    </div>
-                </li>
+                    </li>
+                </template>
             </template>
         </ul>
         <mu-popover :open.sync="open" :trigger="trigger" placement="bottom-end">
@@ -66,83 +70,95 @@
 </template>
 
 <script>
-    import mdui from 'mdui/dist/js/mdui';
-    import localforge from 'localforage';
-    import io from "../lib/io";
+	import mdui from 'mdui/dist/js/mdui';
+	import localforge from 'localforage';
+	import io from "../lib/io";
 
-    export default {
-        name: "md-sider",
-        props: ['drawer', 'list', 'loading', 'st'],
-        data() {
-            return {
-                user: {},
-                menuopen: false,
-                trigger: null,
-                triggerIndex: 0,
-                create: null
-            }
-        },
-        watch: {
-            st(n){
-                this.user = n.user;
-                this.user.color = n.statusLED;
-            }
-        },
-        mounted() {
-            let drawer = new mdui.Drawer('#drawer', {swipe: true});
-            this.$emit('update:drawer', drawer);
-        },
-        methods: {
-            changeCatalog(item) {
-                if (window.innerWidth < 1024) this.drawer.close();
-                this.$emit('changeCatalog', item);
-            },
-            longTap(e) {
-                this.open = true;
-                let ul = this.$refs.list;
-                console.log('长按', ul);
-                this.trigger = ul.children[e];
-                this.triggerIndex = e;
-            },
-            addCatalog() {
-                let len = this.list.length;
-                this.create = {
-                    index: len - 3,
-                    body: {
-                        icon: 'format_list_bulleted',
-                        edit: true
-                    }
-                };
-                for (let i = 0; i < 3; i++) {
-                    this.list[len - i] = this.list[len - i - 1];
-                }
-                this.$set(this.list, len - 3, this.create.body);
-                this.$nextTick(() => {
-                    let input = this.$refs.input[this.$refs.input.length - 1];
-                    setTimeout(() => input.scrollIntoView(), 300);
-                    input.focus();
-                    this.$emit('event:focus',input);
-                });
-            },
-            addCatalogFinish(e) {
-                let value = e.target.value;
-                if (value !== '') {
-                    delete this.create.body.edit;
-                    this.create.body.label = value;
-                    this.create.body.prop = value;
-                    this.$forceUpdate();
-                    this.$emit('createCatalog', this.create.body);
-                } else this.list.splice(this.create.index, 1);
-            },
-            delete_catalog() {
-                let prop = '';
-                prop += this.list[this.triggerIndex].prop;
-                this.list.splice(this.triggerIndex, 1);
-                this.open = false;
-                this.$emit('delete', prop);
-            }
-        }
-    }
+	export default {
+		name: "md-sider",
+		props: ['drawer', 'list', 'loading', 'st'],
+		data() {
+			return {
+				user: {},
+				menuopen: false,
+				trigger: null,
+				trigger_: {
+					index: 0,
+					parentIndex: 0
+				},
+				create: null,
+				open: false
+			}
+		},
+		watch: {
+			st(n) {
+				this.user = n.user;
+				this.user.color = n.statusLED;
+			}
+		},
+		mounted() {
+			let drawer = new mdui.Drawer('#drawer', {swipe: true});
+			this.$emit('update:drawer', drawer);
+		},
+		methods: {
+			changeCatalog(item) {
+				if (window.innerWidth < 1024) this.drawer.close();
+				this.$emit('changeCatalog', item);
+			},
+			longTap(parentIndex, index) {
+				this.open = true;
+				let ul = this.$refs.list;
+				console.log('长按', ul, parentIndex, index);
+				let sum = 0;
+				for (let i = 0; i < parentIndex; i++) {
+					sum += this.list[i].children.length;
+				}
+				sum += parentIndex + index + 1;
+				this.trigger = ul.children[sum];
+				this.trigger_.index = index;
+				this.trigger_.parentIndex = parentIndex;
+			},
+			addCatalog() {
+				let defaultCatalog = this.list[1];
+				this.create = {
+					body: {
+						icon: 'format_list_bulleted',
+						edit: true
+					}
+				};
+				console.log('default catalog', defaultCatalog);
+				defaultCatalog.children.push(this.create.body);
+				this.$set(this.list, 1, defaultCatalog);
+				this.$nextTick(() => {
+					let input = this.$refs.input[this.$refs.input.length - 1];
+					setTimeout(() => input.scrollIntoView(), 300);
+					input.focus();
+					this.$emit('event:focus', input);
+				});
+			},
+			addCatalogFinish(e) {
+				let value = e.target.value;
+				if (value === 'undefined') return;
+				if (value === '') {
+					this.list[1].children.pop();
+					return;
+				}
+				delete this.create.body.edit;
+				this.create.body.label = value;
+				this.create.body.prop = value;
+				e.target.value = undefined;
+				this.$forceUpdate();
+				this.$emit('createCatalog', this.create.body);
+			},
+			delete_catalog() {
+				let li = this.list[this.trigger_.parentIndex].children;
+				let prop = li[this.trigger_.index].prop;
+				li.splice(this.trigger_.index, 1);
+				this.open = false;
+				this.$emit('delete', prop);
+			}
+		}
+	}
 </script>
 
 <style scoped>
