@@ -4,35 +4,41 @@ import App from './App';
 import Routers from './router.js';
 import 'mdui/dist/css/mdui.css';
 import './assets/iconfont/material-icons.css'
+import 'animate.css/animate.min.css';
 import MuseUI from 'muse-ui';
 import 'muse-ui/dist/muse-ui.css';
 import moment from 'moment';
+import Vuex from 'vuex'
+import Store from './store';
 
 moment.locale('zh-CN');
 
 Vue.use(MuseUI);
 // import touch from 'vue-directive-touch';
 // Vue.use(touch);
-import { VueHammer } from 'vue2-hammer'
-VueHammer.config.press = {
-    time: 500
-};
-Vue.use(VueHammer);
+// import { VueHammer } from 'vue2-hammer'
+// VueHammer.config.press = {
+//     time: 500
+// };
+// Vue.use(VueHammer);
 
 //解决循环引用组件报错
 import MdList from "./component/md-list";
 Vue.component('md-list', MdList);
 
 Vue.use(VueRouter);
+Vue.use(Vuex);
 
 // The routing configuration
 const RouterConfig = {
     routes: Routers
 };
 const router = new VueRouter(RouterConfig);
+const store = new Vuex.Store(Store);
 
 new Vue({
     el: '#app',
-    router: router,
+    router,
+	store,
     render: h => h(App)
 });

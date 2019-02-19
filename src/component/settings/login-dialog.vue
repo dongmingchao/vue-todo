@@ -29,8 +29,8 @@
     </mu-container>
 </template>
 <script>
-	import { io } from '../lib/io/';
-	import config from '../lib/config';
+	import { io } from '@/lib/io/';
+	import config from '@/lib/config';
 
 	export default {
 		name: "login-dialog",
@@ -69,7 +69,7 @@
 					});
 					if (ret.status === 'success') {
 						this.host.postToast({message: '登陆成功', color: 'success'});
-						this.host.$emit('change-user', config.loginSuccess(ret.user));
+						this.$store.commit('login',Object.assign(config.online.user, ret.user));
 						this.host.closeDialog();
 					} else if (ret.status === 'error') {
 						switch (ret.msg) {
@@ -96,7 +96,7 @@
 					console.log('resp', ret);
 					if (ret.status === 'success') {
 						this.host.postToast({message: '注册成功', color: 'success'});
-						this.host.$emit('change-user', config.loginSuccess(ret.user));
+						this.$store.commit('login',Object.assign(config.online.user, ret.user));
 						this.host.closeDialog();
 					}
 					this.loading.sign = false;

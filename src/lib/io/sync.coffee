@@ -3,6 +3,7 @@ import config from '../config'
 import flatland from '../../assets/flatland.jpg'
 import b_catalogs from './backend/catalogs.coffee'
 import b_tasks from './backend/tasks.coffee'
+import b_tags from './backend/tags.coffee'
 
 class TextProcessor
 	constructor: (@self,@processors) ->
@@ -18,9 +19,10 @@ class Sync
 		@cessor = new TextProcessor @,[@userStatusProcessor, @retStatusProcessor]
 		@catalogs = new b_catalogs @mc,@cessor
 		@tasks = new b_tasks @mc,@cessor
+		@tags = new b_tags @mc,@cessor
 
 	userStatusProcessor: (des) ->
-		switch @mc.$refs.settings.user.shortStatus
+		switch @mc.$store.state.user.shortStatus
 			when '在线' then des.online()
 
 	retStatusProcessor: (des, ret) ->

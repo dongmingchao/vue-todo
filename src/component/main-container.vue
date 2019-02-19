@@ -1,7 +1,6 @@
 <template>
-    <div style="height: 100%;">
-        <md-sider v-bind:drawer.sync="drawer"
-                  ref="drawer"
+    <div class="main-body">
+        <md-sider ref="drawer"
                   :list="sideList"
                   :st="$refs.settings"
                   @changeCatalog="setCatalog"
@@ -11,11 +10,11 @@
                   @delete="deleteCatalog"
                   :loading="loading.side"/>
         <md-header :title="title"
-                   :st="$refs.settings"
                    @settle="saveHeaderChange"
                    @openSide="collapsedSider"
                    :loading="loading.header"/>
-        <md-list class="main-list" ref="list"
+        <router-view v-if="$route.path==='/note'"/>
+        <md-list v-else class="main-list" ref="list"
                  :list="todoList"
                  @settle="saveTodoListChange"
                  @createTodo="setNewTodo"
@@ -24,7 +23,6 @@
                  @event:focus="e => eKeyBoard(e,$refs.list)"
                  :is-expand="true"
                  placeholder="添加新的待做事项"/>
-        <main-setting ref="settings"/>
         <mu-snackbar position="bottom-end" :color="toast.color" :open.sync="toast.open">
             {{toast.message}}
             <mu-button flat slot="action" color="#fff" @click="toast.open = false">关闭</mu-button>
@@ -35,7 +33,6 @@
 
 	import MdHeader from "./md-header";
 	import MdSider from "./md-sider";
-	import MdList from "./md-list";
 	import {io, Sync} from '../lib/io/index';
 	import config from '../lib/config';
 	import moment from 'moment';
@@ -46,7 +43,7 @@
 
 	export default {
 		name: 'main-container',
-		components: {MainSetting, MdList, MdSider, MdHeader},
+		components: {MainSetting, MdSider, MdHeader},
 		data() {
 			return {
 				items: [1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -140,10 +137,6 @@
 				this.selectedCatalog.data.title = todo;
 				io.save(this.selectedCatalog.prop, this.selectedCatalog.data);
 			},
-			collapsedSider() {
-				console.log('click open side menu');
-				this.drawer.toggle();
-			},
 			setNewTodo(ntd) {
 				console.log('set new todo list event', ntd);
 				this.sync.tasks.add(this.selectedCatalog.prop, ntd);
@@ -151,37 +144,8 @@
 				this.selectedCatalog.data.todoList = this.todoList;
 				io.save(this.selectedCatalog.prop, this.selectedCatalog.data);
 			},
-			async refreshCatalog() {
-				let netCatalog = await this.sync.catalogs.list();
-				console.log('net catalog', netCatalog);
-				for (let each of netCatalog) {
-					let sideL;
-					if (each.type === null) sideL = this.sideList[1].children;
-					else for (let eside of this.sideList) {
-						if (eside.label === each.type)
-							sideL = eside.children;
-					}
-					let hasCatalogs = [];
-					for (let sideSon of sideL)
-						hasCatalogs.push(sideSon.prop);
-					if (!hasCatalogs.includes(each.id))
-						sideL.push({
-							icon: each.icon,
-							label: each.label,
-							prop: each.id
-						});
-					io.save(each.id, {
-						title: {
-							title: each.label,
-							datetime: each.date,
-							date: moment(each.date).format('MMMDo dddd'),
-							bgimg: each.bgimg,
-							actions: each.actions
-						},
-						todoList: null
-					});
-				}
-				io.save('side_list', {body: this.sideList});
+			refreshCatalog() {
+				this.sync.catalogs.list();
 			},
 			async setCatalog(item) {
 				console.log('set catalog', item);
@@ -249,6 +213,7 @@
 			},
 			deleteCatalog(prop) {
 				console.log('delete catalog', prop);
+				this.sync.catalogs.remove(prop);
 				io.remove(prop);
 				this.setCatalog(this.sideList[1]);
 				io.save('side_list', {body: this.sideList});
@@ -279,7 +244,31 @@
 					if (body.lastChild !== this.mat) body.appendChild(this.mat);
 					window.scrollTo(body.scrollWidth, body.scrollHeight);
 				}
-			}
+			},
+			collapsedSider() {
+				console.log('click open side menu');
+				let now = this.$refs.drawer.sider_open;
+				let isPad = window.innerWidth > 1023;
+				this.$refs.drawer.sider_open = !now;
+				if (isPad) {
+					if (now) {
+						this.$el.style.paddingLeft = '0';
+						this.$refs.list.$el.style.width = '100%';
+					} else {
+						this.$el.style.paddingLeft = '256px';
+						this.$refs.list.$el.style.width = 'calc(100% - 256px)';
+					}
+				}
+			},
+            siderOnResize(){
+	            if (window.innerWidth > 1023) {
+		            this.$el.style.paddingLeft = '256px';
+		            this.$refs.list.$el.style.width = 'calc(100% - 256px)';
+	            } else {
+	            	this.$el.style.paddingLeft = '0';
+		            this.$refs.list.$el.style.width = '100%';
+	            }
+            }
 		},
 		mounted() {
 			this.sync = new Sync(this);
@@ -298,6 +287,8 @@
 			document.addEventListener('deviceready', this.ready);
 			window.addEventListener('native.keyboardshow', this.keyboardShow);
 			window.addEventListener('native.keyboardhide', this.keyboardHide);
+			this.siderOnResize();
+			window.addEventListener('resize', this.siderOnResize);
 		}
 	}
 </script>
@@ -310,12 +301,24 @@
     .main-list {
         height: calc(100% - 10rem);
         overflow-y: scroll;
+        position: absolute;
+        /*top: 10rem;*/
+        /*width: 100%;*/
+        transition: width .45s cubic-bezier(.23,1,.32,1);
     }
 
-    @media (min-width: 1023px) {
-        .main-list {
-            width: calc(100% - 240px);
-            position: absolute;
-        }
+    .main-body{
+        /*width: calc(100% - 256px);*/
+        /*left: 256px;*/
+        height: 100%;
+        position: absolute;
+        transition: padding-left .45s cubic-bezier(.23,1,.32,1);
+        /*margin-left: 256px;*/
     }
+
+    /*@media (max-width: 1023px) {*/
+        /*.main-body {*/
+            /*margin-left: 0;*/
+        /*}*/
+    /*}*/
 </style>

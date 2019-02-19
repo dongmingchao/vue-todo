@@ -1,9 +1,9 @@
 <template>
-    <mu-list-item :nested="expand" :open="nestedopen" button>
+    <mu-list-item :nested="expand" :open="nestedopen" button class="td-line">
         <mu-list-item-action>
-            <mu-checkbox v-model="item.checked" @change="check"></mu-checkbox>
+            <mu-checkbox ref="btn_check" v-model="checked"></mu-checkbox>
         </mu-list-item-action>
-        <mu-list-item-content @click="clickBody">
+        <mu-list-item-content>
             <mu-list-item-title>
                 <slot/>
                 {{item.label}}
@@ -65,149 +65,227 @@
             </mu-select>
         </mu-list-item>
         <mu-list-item slot="nested" button>
-            <mu-button color="primary">添加笔记</mu-button>
-            <!--<mu-text-field icon="note"-->
-                           <!--v-model="item.note"-->
-                           <!--label="添加笔记"-->
-                           <!--@change="$emit('settle','note',item.note)"-->
-                           <!--label-float multi-line :rows="3" full-width></mu-text-field>-->
+            <mu-button color="primary" @click="addNote">添加笔记</mu-button>
         </mu-list-item>
-        <!--<mu-button color="secondary"-->
-                   <!--ref="deleteButton"-->
-                   <!--:style="{transform: showDelete}"-->
-                   <!--@click="deleteItem"-->
-                   <!--style="right: -100px;position: absolute;">删除-->
-        <!--</mu-button>-->
+        <mu-button color="secondary"
+            ref="deleteButton"
+            :style="{transform: showDelete}"
+            @click.native.stop="deleteItem"
+            style="right: -100px;position: absolute;">
+            删除
+        </mu-button>
     </mu-list-item>
 </template>
 
 <script>
-    import mdui from 'mdui/dist/js/mdui';
+	// import mdui from 'mdui/dist/js/mdui';
 
-    export default {
-        name: "md-line",
-        props: ['item', 'type', 'expand'],
-        data() {
-            return {
-                // date: null,
-                // time: null,
-                // repeats: null,
-                repeatTerm: [
-                    {
-                        icon: '无',
-                        label: '无'
-                    }, {
-                        icon: '天',
-                        label: '每天'
-                    }, {
-                        icon: '周',
-                        label: '每周'
-                    }, {
-                        icon: '月',
-                        label: '每月'
-                    }, {
-                        icon: '年',
-                        label: '每年'
-                    }, {
-                        icon: '自',
-                        label: '自定义'
-                    }],
-                // note: null,
+	import TdNote from "@/component/td-note";
+	import propagating from 'propagating-hammerjs';
+	import Hammer from 'hammerjs';
+	import 'jquery.event.move';
 
-                nestedopen: false,
-                deleteShow: false,
-                selects: [],
-                time: null,
-                date: null
-            }
-        },
-        watch: {
-            item() {
-                this.nestedopen = false;
-                this.deleteShow = false;
-                this.loadInit();
-            }
-        },
-        methods: {
-            loadInit() {
-                if (this.item.time) this.time = new Date(this.item.time);
-                if (this.item.date) {
-                	console.log('read date',this.item.date);
-                	this.date = new Date(this.item.date);
-                }
-            },
-            clickBody(e) {
-                console.log('click todo line body', e);
-                this.nestedopen = !this.nestedopen;
-                this.$emit('click', e);
-            },
-            check(e) {
-                console.log('you check a todo', e);
-                this.$emit('check', e);
-                this.$emit('settle', 'checked', e);
-            },
-            setNewTodo(str) {
-                let item = this.item;
-                console.log('set new todo step event', str);
-                if (typeof item.steps === 'undefined') {
-                    item.steps = [];
-                    this.$emit('update:item', item);
-                    this.$forceUpdate();
-                }
-                item.steps.push(str);
-                this.$emit('settle', 'steps', item.steps);
-            },
-            toggle(val) {
-                console.log('list item toggle', val);
-                // this.open = false;
-            },
-            stepSettle(prop, value) {
-                prop.unshift('steps');
-                this.$emit('settle', prop, value);
-            },
-            onSwipeLeft(eve) {
-                this.deleteButton.style.transform = `translateX(${eve.deltaX}px)`;
-            },
-            onPanEnd(eve) {
-                this.deleteShow = eve.deltaX < -50;
-                this.$forceUpdate();
-            },
-            deleteItem() {
-                this.$emit('delete', this.item);
-            },
-            setTime(type, value) {
-                if (type === 'time') {
-                    this.$emit('settle', type, this.time.toJSON());
-                }
-                if (type === 'date')
-                    this.$emit('settle', type, this.date.toJSON());
-                if (this.date && this.time) {
-                    let datetime = new Date(this.date.getFullYear(),
-                        this.date.getMonth(),
-                        this.date.getDate(),
-                        this.time.getHours(),
-                        this.time.getMinutes(),
-                        this.time.getSeconds());
-                    console.log('date', this.date, 'time', this.time);
-                    console.log('date time', datetime);
-                    this.item.datetime = datetime;
-                    this.$emit('pushNotify', this.item);
-                }
-            },
-            tapChip(){
-                console.log('tap chip');
-            }
-        },
-        mounted() {
-            // this.deleteButton = this.$refs.deleteButton.$el;
-            this.loadInit();
-        },
-        computed: {
-            showDelete(vm) {
-                return `translateX(${vm.deleteShow ? -120 : 0}px)`
-            }
-        }
-    }
+	export default {
+		name: "md-line",
+		components: {TdNote},
+		props: ['item', 'type', 'expand'],
+		data() {
+			let self = this;
+			return {
+				// date: null,
+				// time: null,
+				repeatTerm: [
+					{
+						icon: '无',
+						label: '无'
+					}, {
+						icon: '天',
+						label: '每天'
+					}, {
+						icon: '周',
+						label: '每周'
+					}, {
+						icon: '月',
+						label: '每月'
+					}, {
+						icon: '年',
+						label: '每年'
+					}, {
+						icon: '自',
+						label: '自定义'
+					}],
+				// note: null,
+
+				nestedopen: false,
+				deleteShow: false,
+				selects: [],
+				time: null,
+				date: null,
+				checked: self.item.checked ? self.item.checked : false,
+				readyMove: false
+			}
+		},
+		watch: {
+			item() {
+				this.nestedopen = false;
+				this.deleteShow = false;
+				this.loadInit();
+			},
+			checked(val) {
+				this.check(val);
+			}
+		},
+		methods: {
+			loadInit() {
+				if (this.item.time) this.time = new Date(this.item.time);
+				if (this.item.date) {
+					console.log('read date', this.item.date);
+					this.date = new Date(this.item.date);
+				}
+			},
+			clickBody(e) {
+				console.log('click todo line body', e);
+				this.nestedopen = !this.nestedopen;
+				this.$emit('click', e);
+			},
+			check(e) {
+				console.log('you check a todo', e);
+				this.$emit('check', e);
+				this.$emit('settle', 'checked', e);
+			},
+			setNewTodo(str) {
+				let item = this.item;
+				console.log('set new todo step event', str);
+				if (typeof item.steps === 'undefined') {
+					item.steps = [];
+					this.$emit('update:item', item);
+					this.$forceUpdate();
+				}
+				item.steps.push(str);
+				this.$emit('settle', 'steps', item.steps);
+			},
+			toggle(val) {
+				console.log('list item toggle', val);
+				// this.open = false;
+			},
+			stepSettle(prop, value) {
+				prop.unshift('steps');
+				this.$emit('settle', prop, value);
+			},
+			onSwipeLeft(eve) {
+				this.$refs.deleteButton.$el.style.transform = `translateX(${eve.distX}px)`;
+			},
+			onPanEnd(eve) {
+				this.deleteShow = eve.distX < -50;
+				this.$forceUpdate();
+			},
+			deleteItem() {
+				this.$emit('delete', this.item);
+			},
+			setTime(type, value) {
+				if (type === 'time') {
+					this.$emit('settle', type, this.time.toJSON());
+				}
+				if (type === 'date')
+					this.$emit('settle', type, this.date.toJSON());
+				if (this.date && this.time) {
+					let datetime = new Date(this.date.getFullYear(),
+						this.date.getMonth(),
+						this.date.getDate(),
+						this.time.getHours(),
+						this.time.getMinutes(),
+						this.time.getSeconds());
+					console.log('date', this.date, 'time', this.time);
+					console.log('date time', datetime);
+					this.item.datetime = datetime;
+					this.$emit('pushNotify', this.item);
+				}
+			},
+			tapChip() {
+				console.log('tap chip');
+			},
+			addNote() {
+				this.$router.push('/note');
+			}
+		},
+		mounted() {
+			let moveCrossCount = 0;
+
+			let node = this.$el;
+			node.addEventListener('movestart', (e) => {
+				e.enableMove();
+				if (this.readyMove) {
+				}
+			});
+			node.addEventListener('moveend', e => {
+				e.stopPropagation();
+				if (!this.readyMove) return;
+				this.readyMove = false;
+				this.$el.style.border = '';
+				this.$el.style.top = '';
+				this.$el.style.transition = '';
+				moveCrossCount = 0;
+				this.$emit('moveItemFinish');
+			});
+			node.addEventListener('move', (e) => {
+				this.onSwipeLeft(e);
+			});
+			node.addEventListener('moveend', e => {
+				this.onPanEnd(e);
+			});
+			node.addEventListener('move', (e) => {
+				e.stopPropagation();
+				if (!this.readyMove) return;
+				this.$el.style.top = e.distY - moveCrossCount * 72 + 'px';
+				if ((e.distY > 72 * moveCrossCount + 72) || (e.distY < 72 * moveCrossCount - 72)) {
+					let nowMoveCrossCount = Math.floor(e.distY / 72);
+					console.log(this.item, e.distY, moveCrossCount, '->', nowMoveCrossCount);
+					if (nowMoveCrossCount < 0) {
+						nowMoveCrossCount++;
+						if (moveCrossCount < nowMoveCrossCount) nowMoveCrossCount--;
+					} else if (moveCrossCount > nowMoveCrossCount) nowMoveCrossCount++;
+					this.$emit('moveItem', this.item, nowMoveCrossCount, moveCrossCount);
+					moveCrossCount = nowMoveCrossCount;
+				}
+			});
+			this.loadInit();
+			let items_gesture = new Hammer.Manager(this.$el, {
+				recognizers: [
+					[Hammer.Press],
+					[Hammer.Tap]
+				]
+			});
+			items_gesture = propagating(items_gesture);
+			items_gesture.on('press', (ev) => {
+				console.log('长按');
+				this.$el.style.border = 'inset';
+				this.$el.style.transition = 'none';
+				this.readyMove = true;
+				this.$emit('moveItemStart');
+				ev.stopPropagation();
+			});
+			items_gesture.on('pressup', (ev) => {
+				console.log('长按结束');
+				this.$el.style.border = '';
+				this.$el.style.transition = '';
+				this.readyMove = false;
+				ev.stopPropagation();
+			});
+			items_gesture.on('tap', ev => {
+				this.clickBody();
+				ev.stopPropagation();
+            });
+			let check_gesture = propagating(new Hammer(this.$refs.btn_check.$el));
+			check_gesture.on('tap', ev => {
+				ev.stopPropagation();
+			});
+		},
+		computed: {
+			showDelete(vm) {
+				return `translateX(${vm.deleteShow ? -120 : 0}px)`
+			}
+		}
+	}
 </script>
 
 <style scoped>
@@ -223,5 +301,14 @@
     .tag-chip {
         font-size: smaller;
         line-height: 20px;
+    }
+
+    .td-line {
+        position: relative;
+        /*-webkit-transition: top .5 ease;*/
+        /*-moz-transition: top .5 ease ;*/
+        /*-ms-transition: top .5 ease ;*/
+        /*-o-transition: top .5 ease ;*/
+        /*transition: top .5 ease;*/
     }
 </style>

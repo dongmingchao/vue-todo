@@ -16,7 +16,7 @@ export default {
 	},
 	catalog: {
 		remove: {
-			api: '/api/catalog/delete'
+			api: '/api/catalog/remove'
 		},
 		add: {
 			api: '/api/catalog/add'
@@ -39,11 +39,24 @@ export default {
 			api: '/api/item/step/add'
 		}
 	},
-	loginSuccess(user) {
-		return Object.assign(user, {
+	tag: {
+		list: {
+			api: '/api/tag/list'
+		}
+	},
+	online:{
+		user: {
 			shortStatus: '在线',
 			status: '使用网络同步',
 			statusLED: 'primary'
-		});
+		}
+	},
+	offline:{
+		user: {
+			name: '本地用户',
+			shortStatus: '离线',
+			status: '使用本地数据',
+			statusLED: null
+		}
 	}
 }

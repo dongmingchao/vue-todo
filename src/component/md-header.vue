@@ -1,5 +1,5 @@
 <template>
-    <div class="mdui-appbar background">
+    <div class="background">
         <div class="mdui-card" style="height: 100%;color: #fff">
             <div class="mdui-card-media" v-if="title">
                 <img :src="title.bgimg" class="background"/>
@@ -32,44 +32,37 @@
             </div>
         </div>
         <div class="loading curtain" :class="{'curtain-show':loading}">
-            <div class="mdui-spinner mdui-spinner-colorful"></div>
+            <div class="mdui-spinner mdui-spinner-colorful" v-if="loading"></div>
         </div>
     </div>
 </template>
 
 <script>
-    import mdui from 'mdui/dist/js/mdui';
-    import BgImageManager from "./bg-image-manager";
-    import SettingsManager from "./settings-manager";
+    // import mdui from 'mdui/dist/js/mdui';
 
     export default {
         name: "md-header",
-        props: ['title', 'loading', 'st'],
+        props: ['title', 'loading'],
         data() {
             return {
             }
         },
         mounted() {
-            mdui.mutation();
+            // mdui.mutation();
         },
         methods: {
         	openSettings(){
-		        this.st.openFullscreenDialog({
-			        title: '设置'
-		        });
 		        this.$router.push('/settings/manager');
             },
             doAction(action) {
                 console.log('do action', action);
                 switch (action.want) {
                     case 'set-background-image': {
-                        this.st.openFullscreenDialog({
-                            title: '设置背景图片',
-                            beBind: {
-                                src: this.title.bgimg
-                            }
-                        });
-                        this.$router.push('/settings/bg-image');
+                    	this.st.screenDialog.title = '设置背景图片';
+                    	this.st.screenDialog.beBind = {
+		                    src: this.title.bgimg
+	                    };
+                        this.st.openFullscreenDialog('/settings/bg-image');
                         this.$nextTick(() => {
                             this.st.$refs.manager.$on('bgImageChange', src => {
                                 console.log('bgImageChange', src);

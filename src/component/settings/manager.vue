@@ -1,12 +1,12 @@
 <template>
-    <mu-paper :z-depth="1">
+    <mu-paper>
         <mu-list textline="two-line">
             <mu-sub-header inset>用户</mu-sub-header>
             <mu-list-item avatar>
                 <mu-list-item-action>
                     <mu-badge circle :color="user.statusLED" badge-class="login-status">
                         <mu-avatar>
-                            <img src="../assets/logo.png" alt="">
+                            <img src="@/assets/logo.png" alt="">
                         </mu-avatar>
                     </mu-badge>
                 </mu-list-item-action>
@@ -42,7 +42,7 @@
         <mu-divider inset></mu-divider>
         <mu-list textline="two-line">
             <mu-sub-header inset>管理</mu-sub-header>
-            <mu-list-item avatar button>
+            <mu-list-item avatar button @click="openPaper">
                 <mu-list-item-action>
                     <mu-avatar color="blue">
                         <mu-icon value="assignment"></mu-icon>
@@ -57,14 +57,14 @@
                     </mu-button>
                 </mu-list-item-action>
             </mu-list-item>
-            <mu-list-item avatar button>
+            <mu-list-item avatar button @click="$router.push('/settings/test')">
                 <mu-list-item-action>
                     <mu-avatar color="blue">
                         <mu-icon value="assignment"></mu-icon>
                     </mu-avatar>
                 </mu-list-item-action>
                 <mu-list-item-content>
-                    <mu-list-item-title>标签库</mu-list-item-title>
+                    <mu-list-item-title>测试</mu-list-item-title>
                 </mu-list-item-content>
                 <mu-list-item-action>
                     <mu-button icon>
@@ -144,49 +144,66 @@
 </template>
 
 <script>
-    import LoginDialog from "./login-dialog";
+	import LoginDialog from "./login-dialog";
+	import {mapState} from "vuex";
 
-    export default {
-        name: "settings-manager",
-        components: {LoginDialog},
-        props: ['st','beBind'],
-        beforeMount() {
-            this.user = this.st.user;
-        },
-        data() {
-            return {
-                dialog: null,
-                login: {
-                    'title': '使用网络同步',
-                    width: "600",
-                    'max-width': '80%',
-                    'esc-press-close': false,
-                    'overlay-close': false,
-                    component: LoginDialog
-                },
-	            toast: {
-		            open: false,
-		            color: 'secondary',
-		            message: ''
-	            }
-            }
-        },
-        methods: {
-	        postToast(opts) {
-		        this.toast = Object.assign(this.toast, opts);
-		        this.toast.open = true;
-		        setTimeout(() => {
-			        this.toast.open = false;
-		        }, 3000);
-	        },
-            openDialog(config) {
-                this.dialog = config;
-            },
-            closeDialog() {
-                this.dialog = null;
-            }
-        }
-    }
+	export default {
+		name: "settings-manager",
+		components: {LoginDialog},
+		props: ['st', 'beBind'],
+		computed: {
+			...mapState({
+				user: 'user'
+			})
+		},
+		data() {
+			return {
+				dialog: null,
+				login: {
+					'title': '使用网络同步',
+					width: "600",
+					'max-width': '80%',
+					'esc-press-close': false,
+					'overlay-close': false,
+					component: LoginDialog
+				},
+				toast: {
+					open: false,
+					color: 'secondary',
+					message: ''
+				}
+			}
+		},
+		methods: {
+			openPaper(config) {
+				this.st.openFullscreenDialog('/settings/tags');
+			},
+			postToast(opts) {
+				this.toast = Object.assign(this.toast, opts);
+				this.toast.open = true;
+				setTimeout(() => {
+					this.toast.open = false;
+				}, 3000);
+			},
+			openDialog(config) {
+				this.dialog = config;
+			},
+			closeDialog() {
+				this.dialog = null;
+			}
+		},
+		mounted() {
+			this.$emit('setEnv', {title: '设置'});
+		},
+		beforeRouteLeave(to, from, next) {
+			console.log('before route leave', to, this.$route);
+			if (to.path === '/')
+				this.st.closeFullscreenDialog();
+			// 导航离开该组件的对应路由时调用
+			// 可以访问组件实例 `this`
+			next();
+		}
+	}
 </script>
 
 <style>

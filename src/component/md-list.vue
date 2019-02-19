@@ -1,18 +1,22 @@
 <template>
     <div>
         <mu-list textline="two-line" nested-indent style="list-style-type: none;overflow: hidden;">
-            <transition-group name="flip-list" tag="div" mode="in-out">
+            <transition-group name="flip-list" tag="div">
                 <template v-for="(item,index) in showList">
                     <md-line :item.sync="item" :key="item.index"
                              v-if="(item!=='add')&&(item!=='finish')"
                              @settle="(prop,value) => packChange(prop,value,item.index)"
                              @click="expandTodo(index)"
                              @check="check(item,index)"
+                             @delete="deleteTodo"
+                             @moveItemStart="changeOrderStart"
+                             @moveItem="changeOrder"
+                             @moveItemFinish="changeOrderFinish"
                              ref="listItems"
-                             @contextmenu.native.prevent.stop="longTap(item,index)"
                              @pushNotify="pe => $emit('pushNotify',pe)"
                              :expand="isExpand">{{item.index}}
                     </md-line>
+                    <!--@contextmenu.native.prevent.stop="longTap(item,index)"-->
                     <mu-list-item :key="item" v-if="item==='add'">
                         <mu-list-item-action>
                             <i class="mdui-icon material-icons">add</i>
@@ -26,8 +30,8 @@
                             </div>
                         </div>
                     </mu-list-item>
-                    <li v-if="item==='finish'&&checkedList.length" :key="item">
-                        <mu-sub-header>已完成</mu-sub-header>
+                    <li v-if="item==='finish'" :key="item">
+                        <mu-sub-header>{{checkedList.length}}条计划已完成</mu-sub-header>
                     </li>
                 </template>
             </transition-group>
@@ -37,7 +41,7 @@
                 <mu-list-item button>
                     <mu-list-item-title>修改图标</mu-list-item-title>
                 </mu-list-item>
-                <mu-list-item button @click="deleteTodo">
+                <mu-list-item button>
                     <mu-list-item-title>删除</mu-list-item-title>
                 </mu-list-item>
                 <mu-list-item button>
@@ -49,157 +53,175 @@
 </template>
 
 <script>
-    import mdui from 'mdui/dist/js/mdui';
-    import MdLine from "./md-line";
+	// import mdui from 'mdui/dist/js/mdui';
+	import MdLine from "./md-line";
 
-    export default {
-        name: "md-list",
-        components: {MdLine},
-        props: ['list', 'isExpand', 'placeholder'],
-        data() {
-            return {
-                create: null,
-                menuopen: false,
-                triggerIndex: 0,
-                trigger: null,
-                checkedList: [],
-                showList: ['add', 'finish'],
-                exclude: ['add', 'finish']
-                // body: null
-            }
-        },
-        methods: {
-            createNewTodo() {
-                this.create = {
-                	createdAt: new Date(),
-                    favorite: false,
-                    repeats: '无',
-                    tags: [{
-                    	label: '随笔',
-                        color: 'primary'
-                    }]
-                };
-                let todo = document.getElementById('newTodoArea');
-                this.$nextTick(() => {
-                    todo.focus();
-                    this.$emit('event:focus',todo);
-                });
-            },
-            longTap(e,i) {
-                this.menuopen = true;
-                let ul = this.$refs.listItems;
-                this.triggerIndex = i;
-                for (let each of ul) {
-                    if (each.item === e) {
-                        this.trigger = each.$el;
-                        break;
-                    }
-                }
-            },
-            addTodo(e) {
-                console.log('add todo change', e.target.value);
-                let value = e.target.value;
-                if (value !== '') {
-                    this.create.label = value;
-                    this.$emit('createTodo', this.create);
-                }
-                e.target.value = '';
-                this.create = null;
-            },
-            expandTodo(index) {
-                this.menuopen = false;
-                console.log('md list expand', index);
-            },
-            markFavorite(item) {
-                console.log('mark favorite', item);
-                item.favorite = !item.favorite;
-            },
-            changeStar(item) {
-                return item.favorite ? 'star' : 'star_border';
-            },
-            packChange(prop, value, index) {
-                let isArray = prop instanceof Array;
-                if (!isArray) prop = [prop];
-                prop.unshift(index);
-                this.$emit('settle', prop, value);
-            },
-            check(t, i) {
-                let checkedLocate = this.checkedList.indexOf(t);
-                if (-1 !== checkedLocate) return this.uncheck(t, i, checkedLocate);
-                let finlocate = this.showList.indexOf('finish');
-                for (let f = i; f <= finlocate; f++) {
-                    this.showList[f] = this.showList[f + 1]
-                }
-                this.showList[finlocate] = t;
-                this.checkedList.push(t);
-                this.$forceUpdate();
-                console.log('check', this.showList);
-            },
-            uncheck(t, i, locate_in_check) {
-                this.checkedList.splice(locate_in_check, 1);
-                for (let f = i; f > 0; f--) {
-                    this.showList[f] = this.showList[f - 1]
-                }
-                this.showList.shift();
-                this.showList.unshift(t);
-                console.log('uncheck', this.showList, this.checkedList, locate_in_check);
-            },
-            updateList() {
-                while (this.showList.length > this.exclude.length) {
-                    let top = this.showList.shift();
-                    if (this.exclude.includes(top))
-                        this.showList.push(top);
-                }
-                if (this.showList.length === 0) {
-                    this.showList.push('add');
-                    this.showList.push('finish');
-                }
-                console.log('list', this.showList);
-                while (this.checkedList.length)
-                    this.checkedList.shift();
-                let unchecks = [];
-                let checks = [];
-                for (let each of this.list) {
-                    each.index = this.list.indexOf(each);
-                    if (each.checked) {
-                        checks.push(each);
-                        this.checkedList.push(each);
-                    } else unchecks.push(each);
-                }
-                for (let each of unchecks.reverse()) {
-                    this.showList.unshift(each);
-                }
-                for (let each of checks) {
-                    this.showList.push(each);
-                }
-            },
-            deleteTodo() {
-                this.menuopen = false;
-                let item = this.showList[this.triggerIndex];
-                this.showList.splice(this.triggerIndex, 1);
-                this.$emit('delete', item);
-                console.log('delete a todo!!', item);
-            }
-            // catalogChange(){
-            //     this.checkedList = [[],[]];
-            //     if (this.list) {
-            //         for (let each of this.list) {
-            //             if (each.checked) this.checkedList[1].push(each);
-            //             else this.checkedList[0].push(each);
-            //         }
-            //     }
-            // }
-        },
-        watch: {
-            list() {
-                if (!this.list) return;
-                this.updateList();
-            }
-        },
-        mounted() {
-            if (this.list) this.updateList();
-        }
-    }
+	export default {
+		name: "md-list",
+		components: {MdLine},
+		props: ['list', 'isExpand', 'placeholder'],
+		data() {
+			return {
+				create: null,
+				menuopen: false,
+				triggerIndex: 0,
+				trigger: null,
+				checkedList: [],
+				showList: ['add', 'finish'],
+				exclude: ['add', 'finish'],
+				// body: null
+			}
+		},
+		methods: {
+			createNewTodo() {
+				this.create = {
+					createdAt: new Date(),
+					favorite: false,
+					repeats: '无',
+					tags: [{
+						label: '随笔',
+						color: 'primary'
+					}]
+				};
+				let todo = document.getElementById('newTodoArea');
+				this.$nextTick(() => {
+					todo.focus();
+					this.$emit('event:focus', todo);
+				});
+			},
+			longTap(e, i) {
+				this.menuopen = true;
+				let ul = this.$refs.listItems;
+				this.triggerIndex = i;
+				for (let each of ul) {
+					if (each.item === e) {
+						this.trigger = each.$el;
+						break;
+					}
+				}
+			},
+			addTodo(e) {
+				console.log('add todo change', e.target.value);
+				let value = e.target.value;
+				if (value !== '') {
+					this.create.label = value;
+					this.$emit('createTodo', this.create);
+				}
+				e.target.value = '';
+				this.create = null;
+			},
+			expandTodo(index) {
+				this.menuopen = false;
+				console.log('md list expand', index);
+			},
+			markFavorite(item) {
+				console.log('mark favorite', item);
+				item.favorite = !item.favorite;
+			},
+			changeStar(item) {
+				return item.favorite ? 'star' : 'star_border';
+			},
+			packChange(prop, value, index) {
+				let isArray = prop instanceof Array;
+				if (!isArray) prop = [prop];
+				prop.unshift(index);
+				this.$emit('settle', prop, value);
+			},
+			check(t, i) {
+				let checkedLocate = this.checkedList.indexOf(t);
+				if (-1 !== checkedLocate) return this.uncheck(t, i, checkedLocate);
+				let finlocate = this.showList.indexOf('finish');
+				for (let f = i; f <= finlocate; f++) {
+					this.showList[f] = this.showList[f + 1]
+				}
+				this.showList[finlocate] = t;
+				this.checkedList.push(t);
+				this.$forceUpdate();
+				console.log('check', this.showList, this.checkedList);
+			},
+			uncheck(t, i, locate_in_check) {
+				this.checkedList.splice(locate_in_check, 1);
+				for (let f = i; f > 0; f--) {
+					this.showList[f] = this.showList[f - 1]
+				}
+				this.showList.shift();
+				this.showList.unshift(t);
+				console.log('uncheck', this.showList, this.checkedList, locate_in_check);
+			},
+			updateList() {
+				while (this.showList.length > this.exclude.length) {
+					let top = this.showList.shift();
+					if (this.exclude.includes(top))
+						this.showList.push(top);
+				}
+				if (this.showList.length === 0) {
+					this.showList.push('add');
+					this.showList.push('finish');
+				}
+				console.log('list', this.showList);
+				while (this.checkedList.length)
+					this.checkedList.shift();
+				let unchecks = [];
+				let checks = [];
+				for (let each of this.list) {
+					each.index = this.list.indexOf(each);
+					if (each.checked) {
+						checks.push(each);
+						this.checkedList.push(each);
+					} else unchecks.push(each);
+				}
+				for (let each of unchecks.reverse()) {
+					this.showList.unshift(each);
+				}
+				for (let each of checks) {
+					this.showList.push(each);
+				}
+			},
+			deleteTodo(item) {
+				let index = this.showList.indexOf(item);
+				this.showList.splice(index, 1);
+				this.$emit('delete', item);
+				console.log('delete a todo!!', item);
+			},
+			// catalogChange(){
+			//     this.checkedList = [[],[]];
+			//     if (this.list) {
+			//         for (let each of this.list) {
+			//             if (each.checked) this.checkedList[1].push(each);
+			//             else this.checkedList[0].push(each);
+			//         }
+			//     }
+			// }
+			changeOrder(item, move, lastMove) {
+				let direct = 1;
+				if (move < 0) direct = -1;
+				let index = this.showList.indexOf(item);
+				let m = move - lastMove;
+				console.log('改变列表顺序', this.showList, index, move, lastMove);
+				let beReplace = this.showList[index + m];
+				console.log('要被替换的元素', beReplace);
+				this.showList[index] = beReplace;
+				this.showList[index + m] = item;
+				this.$forceUpdate();
+			},
+			changeOrderStart(){
+				this.$el.ontouchmove = e => e.preventDefault();
+			},
+			changeOrderFinish() {
+				console.log('调整顺序完成');
+				this.$el.ontouchmove = null;
+			}
+		},
+		watch: {
+			list() {
+				if (!this.list) return;
+				this.updateList();
+			}
+		},
+		mounted() {
+			if (this.list) this.updateList();
+		}
+	}
 </script>
 
 <style scoped>

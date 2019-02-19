@@ -1,5 +1,6 @@
 import document from './document';
 import cloud from './cloud';
+import draft from './draft';
 
 export default {
 	"api": "./apis/sidelist.json",
@@ -39,7 +40,7 @@ export default {
 				{
 					"icon": "book",
 					"label": "草稿",
-					"path": "./apis/draft.json",
+					"path": draft,
 					"prop": "draft"
 				}
 			]

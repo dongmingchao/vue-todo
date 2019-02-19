@@ -1,5 +1,5 @@
 <template>
-    <div class="mdui-drawer mdui-drawer-full-height" id="drawer">
+    <mu-drawer :open.sync="sider_open" :docked="docked">
         <mu-list style="margin-top: 20px" textline="two-line">
             <mu-list-item avatar>
                 <mu-list-item-action>
@@ -66,20 +66,19 @@
                 </mu-list-item>
             </mu-list>
         </mu-popover>
-    </div>
+    </mu-drawer>
 </template>
 
 <script>
-	import mdui from 'mdui/dist/js/mdui';
 	import localforge from 'localforage';
 	import io from "../lib/io";
+	import {mapState} from "vuex";
 
 	export default {
 		name: "md-sider",
-		props: ['drawer', 'list', 'loading', 'st'],
+		props: ['list', 'loading'],
 		data() {
 			return {
-				user: {},
 				menuopen: false,
 				trigger: null,
 				trigger_: {
@@ -87,22 +86,40 @@
 					parentIndex: 0
 				},
 				create: null,
-				open: false
+				open: false,
+				sider_open: null,
+				docked: null
 			}
+		},
+		computed: {
+            ...mapState({
+                user: 'user'
+            })
 		},
 		watch: {
-			st(n) {
-				this.user = n.user;
-				this.user.color = n.statusLED;
-			}
+			// st(n) {
+			// 	this.user = n.user;
+			// 	this.user.color = n.statusLED;
+			// }
 		},
 		mounted() {
-			let drawer = new mdui.Drawer('#drawer', {swipe: true});
-			this.$emit('update:drawer', drawer);
+			// let drawer = new mdui.Drawer('#drawer', {swipe: true});
+			// this.$emit('update:drawer', drawer);
+			this.toggleDrawer();
+			window.addEventListener('resize', this.toggleDrawer);
 		},
 		methods: {
+			toggleDrawer() {
+				if (window.innerWidth > 1023) {
+					this.docked = true;
+					this.sider_open = true;
+				} else {
+					this.docked = false;
+					this.sider_open = false;
+				}
+			},
 			changeCatalog(item) {
-				if (window.innerWidth < 1024) this.drawer.close();
+				if (window.innerWidth < 1024) this.sider_open = false;
 				this.$emit('changeCatalog', item);
 			},
 			longTap(parentIndex, index) {
