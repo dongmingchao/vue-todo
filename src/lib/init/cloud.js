@@ -21,13 +21,19 @@ export default {
 		{
 			"index": 0,
 			"label": "云端里的一条",
-			"prefix": ["随笔"],
+			"tags": [{
+				"label": '随笔',
+				"color": 'primary'
+			}],
 			"content": "随便写的一条，传到云端测试",
 			"checked": true,
 			"steps": [
 				{
 					"label": "第一步",
-					"prefix": ["开始"],
+					"tags": [{
+						"label": '随笔',
+						"color": 'primary'
+					}],
 					"content": "第一步，简单却重要"
 				}
 			]

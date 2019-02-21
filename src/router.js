@@ -1,5 +1,5 @@
 import MainContainer from "./component/main-container";
-import BgImageManager from "./component/bg-image-manager";
+import BgImageManager from "./component/settings/bg-image-manager";
 import SettingsManager from "./component/settings/manager";
 import SettingsTags from '@/component/settings/tags';
 import SettingsTest from '@/component/settings/test';
@@ -14,8 +14,12 @@ export default [{
 		path:'/',
 		component: MdList
 	},{
-		path: '/note',
-		component: TdNote
+		path: 'note',
+		component: TdNote,
+		props: (route) => ({
+			item: route.query.item,
+			index: route.query.index
+		})
 	}],
 	component: MainContainer
 },{

@@ -9,19 +9,17 @@
                   @event:focus="e => eKeyBoard(e,$refs.drawer)"
                   @delete="deleteCatalog"
                   :loading="loading.side"/>
-        <md-header :title="title"
-                   @settle="saveHeaderChange"
-                   @openSide="collapsedSider"
-                   :loading="loading.header"/>
-        <router-view v-if="$route.path==='/note'"/>
-        <md-list v-else class="main-list" ref="list"
+        <md-header @settle="saveHeaderChange"
+                   @openSide="collapsedSider"/>
+        <router-view v-if="$route.path==='/note'"
+                 @settle="saveTodoListChange"/>
+        <md-list v-show="$route.path!=='/note'" class="main-list" ref="list"
                  :list="todoList"
                  @settle="saveTodoListChange"
                  @createTodo="setNewTodo"
                  @delete="deleteTodo"
                  @pushNotify="pushNotification"
                  @event:focus="e => eKeyBoard(e,$refs.list)"
-                 :is-expand="true"
                  placeholder="添加新的待做事项"/>
         <mu-snackbar position="bottom-end" :color="toast.color" :open.sync="toast.open">
             {{toast.message}}
@@ -40,6 +38,7 @@
 	import MainSetting from "./main-setting";
 	import flatland from '../assets/flatland.jpg';
 	import init from '../lib/init';
+	import {mapState} from 'vuex';
 
 	export default {
 		name: 'main-container',
@@ -48,11 +47,8 @@
 			return {
 				items: [1, 2, 3, 4, 5, 6, 7, 8, 9],
 				loading: {
-					header: true,
 					side: true
 				},
-				title: null,
-				todoList: null,
 				selectedCatalog: null,
 				drawer: null,
 				sideList: null,
@@ -67,6 +63,9 @@
 			};
 		},
 		computed: {
+			...mapState({
+				todoList: state => state.selected.catalog.data.todoList
+			}),
 			rotateIcon() {
 				return [
 					'menu-icon',
@@ -123,26 +122,15 @@
 				this.saveRing(prop, value);
 			},
 			saveHeaderChange(prop, value) {
+				prop.unshift('title');
+				prop.unshift(this.selectedCatalog.prop);
 				console.log('save change', 'title', prop, value);
-				let todo = this.title;
-				let res = todo[prop[0]];
-				for (let k = 1; k < prop.length; k++) {
-					if (typeof res[prop[k]] === 'undefined') {
-						res[prop[k]] = {};
-					}
-					res = res[prop[k]];
-					console.log('in prop', res);
-				}
-				res = value;
-				this.selectedCatalog.data.title = todo;
-				io.save(this.selectedCatalog.prop, this.selectedCatalog.data);
+				this.saveRing(prop, value);
 			},
 			setNewTodo(ntd) {
 				console.log('set new todo list event', ntd);
-				this.sync.tasks.add(this.selectedCatalog.prop, ntd);
-				this.todoList.push(ntd);
-				this.selectedCatalog.data.todoList = this.todoList;
-				io.save(this.selectedCatalog.prop, this.selectedCatalog.data);
+				//TODO 新创建的没有id 整个函数都要改 使用$store.io.sync
+                this.$store.dispatch('addTodoItem',ntd);
 			},
 			refreshCatalog() {
 				this.sync.catalogs.list();
@@ -150,7 +138,6 @@
 			async setCatalog(item) {
 				console.log('set catalog', item);
 				if (typeof item.prop === 'undefined') return;
-				this.loading.header = true;
 				let local = await io.fetchObj(item.prop);
 				//第一次安装app的默认清单
 				if (local === null) {
@@ -159,15 +146,17 @@
 					else local = await io.fetch(item.path);
 					io.save(item.prop, local.data);
 				}
-				this.title = local.data.title;
+				// this.title = local.data.title;
+				// this.$store.commit('selectedCatalogTitle', local.data.title);
 				let list = local.data.todoList;
 				if (list === null) {
 					list = await this.sync.tasks.list(item.prop);
 					this.saveRing([item.prop, 'todoList'], list);
+					local.data.todoList = list;
 				}
-				this.todoList = list;
-				this.loading.header = false;
+				// this.todoList = list;
 				this.selectedCatalog = {prop: item.prop, data: local.data, index: this.sideList.indexOf(item)};
+				this.$store.commit('selectCatalog', this.selectedCatalog);
 			},
 			deleteTodo(todo) {
 				this.todoList.splice(this.todoList.indexOf(todo), 1);
@@ -260,17 +249,18 @@
 					}
 				}
 			},
-            siderOnResize(){
-	            if (window.innerWidth > 1023) {
-		            this.$el.style.paddingLeft = '256px';
-		            this.$refs.list.$el.style.width = 'calc(100% - 256px)';
-	            } else {
-	            	this.$el.style.paddingLeft = '0';
-		            this.$refs.list.$el.style.width = '100%';
-	            }
-            }
+			siderOnResize() {
+				if (window.innerWidth > 1023) {
+					this.$el.style.paddingLeft = '256px';
+					this.$refs.list.$el.style.width = 'calc(100% - 256px)';
+				} else {
+					this.$el.style.paddingLeft = '0';
+					this.$refs.list.$el.style.width = '100%';
+				}
+			}
 		},
 		mounted() {
+			this.$store.commit('setSync',this);
 			this.sync = new Sync(this);
 			this.mat = document.createElement('div');
 			this.mat.style.width = '100%';
@@ -287,8 +277,7 @@
 			document.addEventListener('deviceready', this.ready);
 			window.addEventListener('native.keyboardshow', this.keyboardShow);
 			window.addEventListener('native.keyboardhide', this.keyboardHide);
-			this.siderOnResize();
-			window.addEventListener('resize', this.siderOnResize);
+			window.addEventListener('resize', this.siderOnResize);this.siderOnResize();
 		}
 	}
 </script>
@@ -304,21 +293,21 @@
         position: absolute;
         /*top: 10rem;*/
         /*width: 100%;*/
-        transition: width .45s cubic-bezier(.23,1,.32,1);
+        transition: width .45s cubic-bezier(.23, 1, .32, 1);
     }
 
-    .main-body{
+    .main-body {
         /*width: calc(100% - 256px);*/
         /*left: 256px;*/
         height: 100%;
         position: absolute;
-        transition: padding-left .45s cubic-bezier(.23,1,.32,1);
+        transition: padding-left .45s cubic-bezier(.23, 1, .32, 1);
         /*margin-left: 256px;*/
     }
 
     /*@media (max-width: 1023px) {*/
-        /*.main-body {*/
-            /*margin-left: 0;*/
-        /*}*/
+    /*.main-body {*/
+    /*margin-left: 0;*/
+    /*}*/
     /*}*/
 </style>

@@ -2,6 +2,7 @@
     <div>
         <mu-chip v-for="c in chips"
                  v-bind="c"
+                 :key="c.label"
                  class="tags-chip">
             {{c.label}}
         </mu-chip>

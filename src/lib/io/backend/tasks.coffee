@@ -27,6 +27,7 @@ export default (mc,cessor) ->
 				mc.postToast
 					message: '已保存'
 					color: 'success'
+				id: ret.id
 			finally: (ret) ->
 				mc.postToast
 					message: '保存失败'
@@ -47,4 +48,24 @@ export default (mc,cessor) ->
 				mc.postToast
 					message: '删除失败'
 					color: 'error'
+	@update = (id,item) ->
+		for k,v of item
+			if v is null then delete item[k]
+		cessor.process
+			online: ->
+				io.request
+					method: 'POST'
+					url: config.host + config.task.update.api
+					data:
+						id: id
+						item: item
+			success: (ret) ->
+				mc.postToast
+					message: '已保存'
+					color: 'success'
+			finally: (ret) ->
+				mc.postToast
+					message: '保存失败'
+					color: 'error'
+
 	return

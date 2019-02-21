@@ -1,20 +1,20 @@
 <template>
     <div>
-        <mu-list textline="two-line" nested-indent style="list-style-type: none;overflow: hidden;">
+        <mu-list textline="two-line" :value="holdItem" nested-indent style="list-style-type: none;overflow: hidden;">
             <transition-group name="flip-list" tag="div">
                 <template v-for="(item,index) in showList">
+                    <!--@click="expandTodo(index)"-->
                     <md-line :item.sync="item" :key="item.index"
+                             :index="index"
                              v-if="(item!=='add')&&(item!=='finish')"
                              @settle="(prop,value) => packChange(prop,value,item.index)"
-                             @click="expandTodo(index)"
                              @check="check(item,index)"
                              @delete="deleteTodo"
                              @moveItemStart="changeOrderStart"
                              @moveItem="changeOrder"
                              @moveItemFinish="changeOrderFinish"
                              ref="listItems"
-                             @pushNotify="pe => $emit('pushNotify',pe)"
-                             :expand="isExpand">{{item.index}}
+                             @pushNotify="pe => $emit('pushNotify',pe)">{{item.index}}
                     </md-line>
                     <!--@contextmenu.native.prevent.stop="longTap(item,index)"-->
                     <mu-list-item :key="item" v-if="item==='add'">
@@ -59,7 +59,7 @@
 	export default {
 		name: "md-list",
 		components: {MdLine},
-		props: ['list', 'isExpand', 'placeholder'],
+		props: ['placeholder','list'],
 		data() {
 			return {
 				create: null,
@@ -69,6 +69,7 @@
 				checkedList: [],
 				showList: ['add', 'finish'],
 				exclude: ['add', 'finish'],
+                holdItem: null
 				// body: null
 			}
 		},
@@ -204,12 +205,16 @@
 				this.showList[index + m] = item;
 				this.$forceUpdate();
 			},
-			changeOrderStart(){
+			changeOrderStart(item) {
 				this.$el.ontouchmove = e => e.preventDefault();
+				this.holdItem = item.index;
 			},
-			changeOrderFinish() {
-				console.log('调整顺序完成');
+			changeOrderFinish(really) {
 				this.$el.ontouchmove = null;
+				this.holdItem = null;
+				if (really) {
+					console.log('调整顺序完成');
+				}
 			}
 		},
 		watch: {

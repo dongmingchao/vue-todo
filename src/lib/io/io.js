@@ -79,6 +79,8 @@ export default {
             oReq.onload = function () {
                 if (oReq.status === 200)
                     r(this.responseText);
+                else if (oReq.status === 400)
+	                j({ status:'parameters error', code:oReq.status, parameters: options.data });
                 else
                 	j({ status:'net error', code:oReq.status });
             };

@@ -37,6 +37,9 @@ export default {
 		},
 		addStep: {
 			api: '/api/item/step/add'
+		},
+		update: {
+			api: '/api/catalog/item/update'
 		}
 	},
 	tag: {

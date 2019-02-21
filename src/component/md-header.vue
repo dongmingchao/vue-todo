@@ -1,7 +1,7 @@
 <template>
     <div class="background">
         <div class="mdui-card" style="height: 100%;color: #fff">
-            <div class="mdui-card-media" v-if="title">
+            <div class="mdui-card-media">
                 <img :src="title.bgimg" class="background"/>
                 <div class="mdui-card-media-covered mdui-card-media-covered-transparent">
                     <div class="mdui-card-primary">
@@ -31,56 +31,56 @@
                 </a>
             </div>
         </div>
-        <div class="loading curtain" :class="{'curtain-show':loading}">
-            <div class="mdui-spinner mdui-spinner-colorful" v-if="loading"></div>
+        <div class="loading curtain" :class="{'curtain-show':title.loading}">
+            <div class="mdui-spinner mdui-spinner-colorful" v-if="title.loading"></div>
         </div>
     </div>
 </template>
 
 <script>
-    // import mdui from 'mdui/dist/js/mdui';
+	// import mdui from 'mdui/dist/js/mdui';
+	import {mapState} from 'vuex';
 
-    export default {
-        name: "md-header",
-        props: ['title', 'loading'],
-        data() {
-            return {
-            }
-        },
-        mounted() {
-            // mdui.mutation();
-        },
-        methods: {
-        	openSettings(){
-		        this.$router.push('/settings/manager');
-            },
-            doAction(action) {
-                console.log('do action', action);
-                switch (action.want) {
-                    case 'set-background-image': {
-                    	this.st.screenDialog.title = '设置背景图片';
-                    	this.st.screenDialog.beBind = {
-		                    src: this.title.bgimg
-	                    };
-                        this.st.openFullscreenDialog('/settings/bg-image');
-                        this.$nextTick(() => {
-                            this.st.$refs.manager.$on('bgImageChange', src => {
-                                console.log('bgImageChange', src);
-                                this.title.bgimg = src;
-                                this.$emit('settle', ['bgimg'], src);
-                            })
-                        });
-                    }
+	export default {
+		name: "md-header",
+		computed: {
+			...mapState({
+				title: state => state.selected.catalog.data.title
+			})
+		},
+		data() {
+			return {}
+		},
+		mounted() {
+			// mdui.mutation();
+		},
+		methods: {
+			openSettings() {
+				this.$router.push('/settings/manager');
+			},
+			doAction(action) {
+				console.log('do action', action);
+				switch (action.want) {
+					case 'set-background-image': {
+						this.$router.push('/settings/bg-image');
+						// this.$nextTick(() => {
+						// 	this.st.$refs.manager.$on('bgImageChange', src => {
+						// 		console.log('bgImageChange', src);
+						// 		this.title.bgimg = src;
+						// 		this.$emit('settle', ['bgimg'], src);
+						// 	})
+						// });
+					}
 
-                }
-            }
-        },
-        watch: {
-            title() {
-                console.log('watch title', this.title);
-            }
-        }
-    }
+				}
+			}
+		},
+		watch: {
+			title() {
+				console.log('watch title', this.title);
+			}
+		}
+	}
 </script>
 
 <style scoped>

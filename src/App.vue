@@ -10,7 +10,9 @@
 	export default {
 		name: 'app',
 		data() {
-			return {}
+			return {
+				sync: 233
+            }
 		}
 	}
 </script>

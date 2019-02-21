@@ -17,34 +17,44 @@
 </template>
 
 <script>
-    import dusk from '../assets/dusk.jpg';
-    import flatland from '../assets/flatland.jpg';
+	import dusk from '@/assets/dusk.jpg';
+	import flatland from '@/assets/flatland.jpg';
+	import {mapState} from 'vuex';
 
-    export default {
-        name: "bg-image-manager",
-        props: ['beBind'],
-        data() {
-            return {
-                localImages: [{
-                    name: '血色黎明',
-                    src: dusk
-                }, {
-                    name: '原谅色平原',
-                    src: flatland
-                }],
-                nowSrc: null
-            }
-        },
-        methods:{
-            imgChange(n){
-                this.$emit('bgImageChange',n);
-                console.log('manager bgImageChange',n, this.nowSrc);
-            }
-        },
-        mounted(){
-            this.nowSrc = this.beBind.src;
-        }
-    }
+	export default {
+		name: "bg-image-manager",
+		computed: {
+			...mapState({
+				header: state => state.selected.catalog.data.title
+			})
+		},
+		data() {
+			return {
+				localImages: [{
+					name: '血色黎明',
+					src: dusk
+				}, {
+					name: '原谅色平原',
+					src: flatland
+				}],
+				nowSrc: null
+			}
+		},
+		methods: {
+			imgChange(n) {
+				this.$store.commit('setMHeaderBGIMG', this.nowSrc);
+				let prop = ['title', 'bgimg'];
+				prop.unshift(this.$store.state.selected.catalog.prop);
+				this.$store.state.io.saveRing(prop, this.nowSrc);
+			}
+		},
+		mounted() {
+			this.$emit('setEnv', {title: '设置背景图片'});
+		},
+		activated() {
+			this.nowSrc = this.header.bgimg;
+		}
+	}
 </script>
 
 <style scoped>

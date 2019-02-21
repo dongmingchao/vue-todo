@@ -133,7 +133,7 @@
                 </mu-list-item-action>
             </mu-list-item>
         </mu-list>
-        <mu-dialog :open.sync="dialog" v-bind="dialog">
+        <mu-dialog :open.sync="dialogOpen" v-bind="dialog">
             <component :is="dialog.component" :host="_self" v-if="dialog"/>
         </mu-dialog>
         <mu-snackbar position="bottom-end" :color="toast.color" :open.sync="toast.open">
@@ -159,6 +159,7 @@
 		data() {
 			return {
 				dialog: null,
+				dialogOpen: false,
 				login: {
 					'title': '使用网络同步',
 					width: "600",
@@ -186,9 +187,11 @@
 				}, 3000);
 			},
 			openDialog(config) {
+				this.dialogOpen = true;
 				this.dialog = config;
 			},
 			closeDialog() {
+				this.dialogOpen = false;
 				this.dialog = null;
 			}
 		},

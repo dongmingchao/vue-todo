@@ -5,6 +5,7 @@ const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
+	mode: 'development',
     entry: './src/main.js',
     output: {
         path: path.resolve(__dirname, './dist'),
@@ -126,6 +127,7 @@ module.exports = {
 };
 
 if (process.env.NODE_ENV === 'production') {
+	module.exports.mode = 'production';
     module.exports.devtool = '#source-map';
     // http://vue-loader.vuejs.org/en/workflow/production.html
     module.exports.plugins = (module.exports.plugins || []).concat([

@@ -1,13 +1,14 @@
 import user from './user.coffee';
+import selected from './selected';
+import io from './io';
 
 export default {
-	state: {
-		count: 0
-	},
 	mutations: {
 
 	},
 	modules: {
-		user
+		user,
+		selected,
+		io
 	}
 }

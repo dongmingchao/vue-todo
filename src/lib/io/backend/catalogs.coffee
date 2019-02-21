@@ -1,6 +1,7 @@
 import io from '../io'
 import config from '@/lib/config'
 import flatland from '@/assets/flatland.jpg'
+import moment from 'moment'
 
 export default (mc,cessor) ->
 	@list = ->
