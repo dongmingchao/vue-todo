@@ -2,6 +2,9 @@ import io from '../io'
 import config from '@/lib/config'
 
 export default (mc,cessor) ->
+	@done =
+		add: (ret,found) ->
+			found.id = ret.id
 	@list = (id) ->
 		cessor.process
 			online: ->
@@ -23,6 +26,10 @@ export default (mc,cessor) ->
 					data:
 						catalogId: id
 						item: item
+			offline: ->
+				mc.$store.commit 'addReadyTaskWaiter',
+					waiter: 'tasks/add'
+
 			success: (ret) ->
 				mc.postToast
 					message: '已保存'

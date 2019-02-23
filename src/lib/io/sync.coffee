@@ -23,7 +23,8 @@ class Sync
 
 	userStatusProcessor: (des) ->
 		switch @mc.$store.state.user.shortStatus
-			when '在线' then des.online()
+			when '在线' then des.online() if des.online?
+			when '离线' then des.offline() if des.offline?
 
 	retStatusProcessor: (des, ret) ->
 		ret = await ret

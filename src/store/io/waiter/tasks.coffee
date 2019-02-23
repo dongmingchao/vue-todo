@@ -1,16 +1,17 @@
+import {io} from '@/lib/io'
+
 export default {
 	state:
-		indexes: []
 		promises: []
 		bridge: []
 
 	mutations:
 		addReadyTaskWaiter: (state,task) ->
-			bridge = {}
-			bridge.index = state.indexes.length
-			bridge.depIndex = task.index
-			state.indexes.push task.index
 			state.promises.push task.waiter
+			state.bridge.push task.index
+			io.save new Date().toJSON(),
+				bridge: task.index
+				promise: task.waiter
 
 	actions:
 		addTaskWaiter: ({state, commit, rootState},task) ->
@@ -18,5 +19,7 @@ export default {
 			ret = await task.waiter
 			found = await rootState.io.find task.index
 			task.done(ret,found)
+
+		activateWaiter: () ->
 
 }
