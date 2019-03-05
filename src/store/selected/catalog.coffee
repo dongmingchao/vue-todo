@@ -26,10 +26,7 @@ export default {
 	actions:
 		addTodoItem: ({state, commit, rootState}, item) ->
 			state.data.todoList.push item
-			index = item.index
-			waiter = rootState.io.sync.tasks.add state.prop, item
-			done = (ret,found) ->
-				found.id = ret.id
+			rootState.io.sync.tasks.add state.prop, item
 			rootState.io.saveRing [state.prop],state.data
 
 
@@ -40,9 +37,9 @@ export default {
 			item = rootState.selected.catalog.data.todoList[pv.prop[1]]
 			if item.id?
 				id = item.id
-				item = Object.assign({}, item)
-				delete item.id
-				rootState.io.sync.tasks.update id, item
+				ntd = { index: item.index }
+				ntd[pv.prop[2]] = pv.value
+				rootState.io.sync.tasks.update id, ntd
 
 			pv.prop.unshift(state.prop)
 			rootState.io.saveRing pv.prop, pv.value

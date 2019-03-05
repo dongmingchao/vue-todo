@@ -162,7 +162,8 @@
 				}
 				delete this.create.body.edit;
 				this.create.body.label = value;
-				this.create.body.prop = value;
+                this.create.body.date = new Date().toJSON();
+				this.create.body.prop = value + '|' + this.create.body.date;
 				e.target.value = undefined;
 				this.$forceUpdate();
 				this.$emit('createCatalog', this.create.body);

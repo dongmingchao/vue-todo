@@ -1,4 +1,5 @@
 import {io, Sync} from '@/lib/io';
+import waiter from './waiter';
 
 export default {
 	state: {
@@ -45,5 +46,8 @@ export default {
 			state.main_controller = mc;
 			state.sync = new Sync(mc);
 		}
+	},
+	modules:{
+        waiter
 	}
 }

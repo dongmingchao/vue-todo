@@ -28,15 +28,15 @@ export default (mc,cessor) ->
 							icon: each.icon
 							label: each.label
 							prop: each.id
-					io.save(each.id,
-						title:
-							title: each.label
-							datetime: each.date
-							date: moment(each.date).format('MMMDo dddd')
-							bgimg: each.bgimg
-							actions: each.actions
-						todoList: null
-					)
+						io.save(each.id,
+							title:
+								title: each.label
+								datetime: each.date
+								date: moment(each.date).format('MMMDo dddd')
+								bgimg: each.bgimg
+								actions: each.actions
+							todoList: null
+						)
 				io.save('side_list', body: mc.sideList)
 
 	@add = (item) ->

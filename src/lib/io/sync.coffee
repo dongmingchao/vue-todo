@@ -16,7 +16,7 @@ class TextProcessor
 
 class Sync
 	constructor: (@mc) ->
-		@cessor = new TextProcessor @,[@userStatusProcessor, @retStatusProcessor]
+		@cessor = new TextProcessor @,[@userStatusProcessor, @retStatusProcessor, @updateLocalProcessor]
 		@catalogs = new b_catalogs @mc,@cessor
 		@tasks = new b_tasks @mc,@cessor
 		@tags = new b_tags @mc,@cessor
@@ -30,9 +30,20 @@ class Sync
 		ret = await ret
 		return if ret is undefined
 		switch ret.status
-			when 'success' then des.success(ret)
+			when 'success' then des.success(ret.data)
 			else
-				des.finally(ret)
+				des.finally(ret.data)
+
+	updateLocalProcessor: (des, ret) ->
+		modified = await ret
+		bridge = des.bridge
+		return ret if bridge is undefined or modified is undefined or modified.status is not 'success'
+		await @mc.$store.state.io.saveRing bridge.props, modified.data
+		if @mc.$store.state.selected.catalog.prop is bridge.props[0]
+			console.log 'now select catalog',bridge.props[0]
+			@mc.$store.commit 'saveOfCatalog',
+				prop: bridge.props[1..]
+				value: modified.data
 
 
 export default Sync

@@ -13,13 +13,20 @@
 			return {
 				sync: 233
             }
-		}
+		},
+        mounted(){
+		    this.$store.dispatch('activateWaiter');
+        }
 	}
 </script>
 
 <style>
     .mu-ripple-wrapper {
         pointer-events: none;
+    }
+
+    .moveFix .mu-item {
+        color: #2196f3;
     }
 
     /*

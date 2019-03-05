@@ -1,24 +1,24 @@
 import MainContainer from "./component/main-container";
+import MainList from "./component/main-list";
 import BgImageManager from "./component/settings/bg-image-manager";
 import SettingsManager from "./component/settings/manager";
 import SettingsTags from '@/component/settings/tags';
 import SettingsTest from '@/component/settings/test';
 import MainSettings from './component/main-setting';
 import TestBtn from '@/component/test-btn';
-import TdNote from '@/component/td-note';
-import MdList from "@/component/md-list";
+import TdMain from '@/component/td-main';
 
 export default [{
 	path: '/',
 	children:[{
 		path:'/',
-		component: MdList
+		component: MainList
 	},{
 		path: 'note',
-		component: TdNote,
+		component: TdMain,
 		props: (route) => ({
-			item: route.query.item,
-			index: route.query.index
+			// item: route.query.item,
+			itemIndex: route.query.itemIndex
 		})
 	}],
 	component: MainContainer
@@ -38,4 +38,7 @@ export default [{
 		path: 'test',
 		component: SettingsTest
 	}]
+},{
+	path: '/test',
+	component: TestBtn
 }]

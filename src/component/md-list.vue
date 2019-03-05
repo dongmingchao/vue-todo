@@ -1,40 +1,8 @@
 <template>
     <div>
-        <mu-list textline="two-line" :value="holdItem" nested-indent style="list-style-type: none;overflow: hidden;">
-            <transition-group name="flip-list" tag="div">
-                <template v-for="(item,index) in showList">
-                    <!--@click="expandTodo(index)"-->
-                    <md-line :item.sync="item" :key="item.index"
-                             :index="index"
-                             v-if="(item!=='add')&&(item!=='finish')"
-                             @settle="(prop,value) => packChange(prop,value,item.index)"
-                             @check="check(item,index)"
-                             @delete="deleteTodo"
-                             @moveItemStart="changeOrderStart"
-                             @moveItem="changeOrder"
-                             @moveItemFinish="changeOrderFinish"
-                             ref="listItems"
-                             @pushNotify="pe => $emit('pushNotify',pe)">{{item.index}}
-                    </md-line>
-                    <!--@contextmenu.native.prevent.stop="longTap(item,index)"-->
-                    <mu-list-item :key="item" v-if="item==='add'">
-                        <mu-list-item-action>
-                            <i class="mdui-icon material-icons">add</i>
-                        </mu-list-item-action>
-                        <div class="mdui-list-item-content" style="margin-left: 0" @click="createNewTodo">
-                            <div class="mdui-list-item-title" v-show="!create">{{placeholder}}</div>
-                            <div class="mdui-textfield" v-show="create">
-                                <input class="mdui-textfield-input" @keydown.enter="addTodo" @blur="addTodo"
-                                       id="newTodoArea"
-                                       placeholder="标题"/>
-                            </div>
-                        </div>
-                    </mu-list-item>
-                    <li v-if="item==='finish'" :key="item">
-                        <mu-sub-header>{{checkedList.length}}条计划已完成</mu-sub-header>
-                    </li>
-                </template>
-            </transition-group>
+        <mu-list textline="two-line"
+                 nested-indent style="list-style-type: none;overflow: hidden;">
+            <slot/>
         </mu-list>
         <mu-popover :open.sync="menuopen" :trigger="trigger" placement="bottom-end">
             <mu-list>
@@ -55,10 +23,12 @@
 <script>
 	// import mdui from 'mdui/dist/js/mdui';
 	import MdLine from "./md-line";
+    import { ContainerMixin } from 'vue-slicksort';
 
 	export default {
 		name: "md-list",
 		components: {MdLine},
+        mixins: [ContainerMixin],
 		props: ['placeholder','list'],
 		data() {
 			return {
@@ -68,13 +38,13 @@
 				trigger: null,
 				checkedList: [],
 				showList: ['add', 'finish'],
-				exclude: ['add', 'finish'],
-                holdItem: null
+				exclude: ['add', 'finish']
 				// body: null
 			}
 		},
 		methods: {
 			createNewTodo() {
+			    let self = this;
 				this.create = {
 					createdAt: new Date(),
 					favorite: false,
@@ -82,8 +52,9 @@
 					tags: [{
 						label: '随笔',
 						color: 'primary'
-					}]
-				};
+					}],
+                    index: self.list.length
+                };
 				let todo = document.getElementById('newTodoArea');
 				this.$nextTick(() => {
 					todo.focus();
@@ -165,7 +136,7 @@
 				let unchecks = [];
 				let checks = [];
 				for (let each of this.list) {
-					each.index = this.list.indexOf(each);
+					// each.index = this.list.indexOf(each);
 					if (each.checked) {
 						checks.push(each);
 						this.checkedList.push(each);
@@ -193,29 +164,6 @@
 			//         }
 			//     }
 			// }
-			changeOrder(item, move, lastMove) {
-				let direct = 1;
-				if (move < 0) direct = -1;
-				let index = this.showList.indexOf(item);
-				let m = move - lastMove;
-				console.log('改变列表顺序', this.showList, index, move, lastMove);
-				let beReplace = this.showList[index + m];
-				console.log('要被替换的元素', beReplace);
-				this.showList[index] = beReplace;
-				this.showList[index + m] = item;
-				this.$forceUpdate();
-			},
-			changeOrderStart(item) {
-				this.$el.ontouchmove = e => e.preventDefault();
-				this.holdItem = item.index;
-			},
-			changeOrderFinish(really) {
-				this.$el.ontouchmove = null;
-				this.holdItem = null;
-				if (really) {
-					console.log('调整顺序完成');
-				}
-			}
 		},
 		watch: {
 			list() {
@@ -232,17 +180,5 @@
 <style scoped>
     .mu-list .mu-list {
         padding-left: 34px;
-    }
-
-    .flip-list-enter-active, .flip-list-leave-active {
-        transition: opacity .5s ease;
-    }
-
-    .flip-list-enter, .flip-list-leave-to {
-        opacity: 0;
-    }
-
-    .flip-list-move {
-        transition: transform .5s;
     }
 </style>

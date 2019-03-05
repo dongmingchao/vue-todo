@@ -1,11 +1,9 @@
 import io from '../io'
 import config from '@/lib/config'
 
-export default (mc,cessor) ->
-	@done =
-		add: (ret,found) ->
-			found.id = ret.id
+export default (mc, cessor) ->
 	@list = (id) ->
+		console.log 'task list',config.host + config.task.list.api
 		cessor.process
 			online: ->
 				mc.postToast(message: '正在获取清单')
@@ -16,10 +14,13 @@ export default (mc,cessor) ->
 						catalogId: id
 			success: (ret) ->
 				ret.items
-	@add = (id,item) ->
+	@add = (id, item) ->
+		props = [id, 'todoList', item.index]
 		cessor.process
+			bridge:
+				props: props
 			online: ->
-				mc.postToast(message: '正在获取清单')
+				mc.postToast(message: '正在保存')
 				io.request
 					method: 'POST'
 					url: config.host + config.task.add.api
@@ -28,18 +29,27 @@ export default (mc,cessor) ->
 						item: item
 			offline: ->
 				mc.$store.commit 'addReadyTaskWaiter',
-					waiter: 'tasks/add'
-
+					waiter:
+						sync: ['tasks']
+						method: 'add'
+						args: [id, 'bridge']
+					bridge:
+						props: props
+				io.save 'waiters', mc.$store.state.io.waiter.tasks
 			success: (ret) ->
+				found = await mc.$store.state.io.find props
+				found.id = ret.id
 				mc.postToast
 					message: '已保存'
 					color: 'success'
-				id: ret.id
+				status: 'success'
+				data: found
 			finally: (ret) ->
 				mc.postToast
 					message: '保存失败'
 					color: 'error'
 	@remove = (td) ->
+		console.log 'task remove',td
 		cessor.process
 			online: ->
 				io.request
@@ -47,17 +57,25 @@ export default (mc,cessor) ->
 					url: config.host + config.task.remove.api
 					data:
 						id: td.id
-			success: (ret) ->
+			offline: ->
+				mc.$store.commit 'addReadyTaskWaiter',
+					waiter:
+						sync: ['tasks']
+						method: 'remove'
+						args: [{id: td.id}]
+					bridge:
+						props: [mc.$store.state.selected.catalog.prop, 'todoList', td.index]
+				io.save 'waiters', mc.$store.state.io.waiter.tasks
+			success: ->
 				mc.postToast
 					message: '已删除'
 					color: 'success'
-			finally: (ret) ->
+			finally: ->
 				mc.postToast
 					message: '删除失败'
 					color: 'error'
-	@update = (id,item) ->
-		for k,v of item
-			if v is null then delete item[k]
+	@update = (id, item) ->
+		props = [mc.$store.state.selected.catalog.prop, 'todoList', item.index]
 		cessor.process
 			online: ->
 				io.request
@@ -66,6 +84,15 @@ export default (mc,cessor) ->
 					data:
 						id: id
 						item: item
+			offline: ->
+				mc.$store.commit 'addReadyTaskWaiter',
+					waiter:
+						sync: ['tasks']
+						method: 'update'
+						args: [id, item]
+					bridge:
+						props: props
+				io.save 'waiters', mc.$store.state.io.waiter.tasks
 			success: (ret) ->
 				mc.postToast
 					message: '已保存'
