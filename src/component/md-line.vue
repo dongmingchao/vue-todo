@@ -11,20 +11,32 @@
             <mu-list-item-sub-title style="color: rgba(0, 0, 0, .87)" v-if="item.tags">
                 <mu-chip class="tag-chip"
                          :color="chip.color"
-                         @click.stop="tapChip"
+                         ref="chips"
                          v-for="(chip,index) in item.tags" :key="index">
                     {{chip.label}}
                 </mu-chip>
-                <mu-icon value="cloud_done" color="success" style="vertical-align: middle;" v-show="item.id"/>
+                <mu-icon :value="syncStatus" color="success" style="vertical-align: middle;"/>
             </mu-list-item-sub-title>
             <mu-list-item-sub-title v-if="item.note ||item.content">
                 {{item.content ? item.content:item.note}}
             </mu-list-item-sub-title>
         </mu-list-item-content>
         <mu-list-item-action>
-            <mu-list-item-after-text>15 min</mu-list-item-after-text>
-            <mu-checkbox color="yellow700" v-model="selects" value="value1" uncheck-icon="star_border"
-                         checked-icon="star"></mu-checkbox>
+            <mu-list-item-after-text>
+                <div v-if="!datetime"></div>
+                <div v-else-if="datetime.valueOf() < Date.now()">{{moment(datetime).fromNow()}}</div>
+                <countdown :time="datetime - Date.now()" tag="div" v-else>
+                    <template slot-scope="props">
+                        {{showRestTime(props)}}
+                    </template>
+                </countdown>
+            </mu-list-item-after-text>
+            <mu-checkbox color="yellow700"
+                         v-model="item.favorite"
+                         @change="tapStar"
+                         ref="star"
+                         uncheck-icon="star_border"
+                         checked-icon="star"/>
         </mu-list-item-action>
         <mu-button color="secondary"
                    ref="deleteButton"
@@ -42,35 +54,54 @@
     import TdNote from "@/component/td-main";
     import propagating from 'propagating-hammerjs';
     import Hammer from 'hammerjs';
-    import 'jquery.event.move';
     import {ElementMixin} from 'vue-slicksort';
+    import countdown from '@chenfengyuan/vue-countdown';
+    import moment from 'moment';
 
     export default {
         name: "md-line",
-        components: {TdNote},
+        components: {TdNote, countdown},
         mixins: [ElementMixin],
-        props: ['item', 'type'],
+        props: ['itemIndex', 'type'],
         data() {
             let self = this;
             return {
                 // date: null,
                 // time: null,
                 // note: null,
-
+                moment,
                 nestedopen: false,
                 deleteShow: false,
-                selects: [],
-                time: null,
-                date: null,
-                readyMove: false
+                star: null,
+                datetime: null,
+                readyMove: false,
+                syncStatus: null
             }
         },
-        watch: {
-            // checked(val) {
-            // 	this.check(val);
-            // }
+        computed: {
+            item(vm) {
+                let itm = vm.$store.state.selected.catalog.data.todoList[vm.itemIndex];
+                if (itm.date && itm.time) {
+                    let date = itm.date.slice(0, 10);
+                    let time = itm.time.slice(10);
+                    this.datetime = new Date(date + time);
+                }
+                if (itm.id) this.syncStatus = 'cloud_done';
+                else this.syncStatus = null;
+                return itm;
+            },
+            showDelete(vm) {
+                return `translateX(${vm.deleteShow ? -120 : 0}px)`
+            }
         },
         methods: {
+            showRestTime(val) {
+                let day = val.days === 0 ? '' : val.days + '天';
+                let hour = val.hours === 0 ? '' : val.hours + '小时';
+                let minute = val.minutes === 0 ? '' : val.minutes + '分钟';
+                let second = val.seconds === 0 ? '' : val.seconds + '秒';
+                return day + hour + minute + second;
+            },
             clickBody(e) {
                 console.log('click todo line body', e);
                 this.nestedopen = !this.nestedopen;
@@ -119,7 +150,12 @@
             tapChip() {
                 console.log('tap chip');
             },
-            addNote() {
+            tapStar(e) {
+                console.log('star change', e);
+                this.$store.dispatch('saveTodoListChange', {
+                    prop: [this.item.index, 'favorite'],
+                    value: e
+                });
             },
             gesture() {
                 let host = () => {
@@ -181,7 +217,7 @@
                         console.log('长按结束');
                         // this.$el.style.transition = '';
                         this.readyMove = false;
-                        this.$emit('moveItemFinish', false);
+                        this.$emit('moveItemFinish');
                         ev.stopPropagation();
                     });
                     items_gesture.on('tap', ev => {
@@ -201,19 +237,31 @@
                         ev.stopPropagation();
                     });
                 };
+                let chips = () => {
+                    for (let chip of this.$refs.chips) {
+                        let check_gesture = propagating(new Hammer(chip.$el));
+                        check_gesture.on('tap', ev => {
+                            this.tapChip();
+                            ev.stopPropagation();
+                        });
+                    }
+                };
+                let star = () => {
+                    let check_gesture = propagating(new Hammer(this.$refs.star.$el));
+                    check_gesture.on('tap', ev => {
+                        ev.stopPropagation();
+                    });
+                };
                 host();
                 edit();
                 check();
                 del();
+                chips();
+                star();
             }
         },
         mounted() {
             this.gesture();
-        },
-        computed: {
-            showDelete(vm) {
-                return `translateX(${vm.deleteShow ? -120 : 0}px)`
-            }
         }
     }
 </script>
@@ -231,6 +279,7 @@
     .tag-chip {
         font-size: smaller;
         line-height: 20px;
+        margin: 0 5px;
     }
 
     .td-line {

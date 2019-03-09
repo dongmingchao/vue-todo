@@ -15,7 +15,7 @@
                     <mu-list-item-sub-title>{{user.status}}</mu-list-item-sub-title>
                 </mu-list-item-content>
                 <mu-list-item-action>
-                    <mu-button v-if="user.shortStatus === '在线'">
+                    <mu-button v-if="user.shortStatus === '在线'" @click="userLogout">
                         注销
                     </mu-button>
                     <mu-button v-else @click="openDialog(login)">
@@ -30,7 +30,7 @@
                     </mu-avatar>
                 </mu-list-item-action>
                 <mu-list-item-content>
-                    <mu-list-item-title>设置数据隐私保护</mu-list-item-title>
+                    <mu-list-item-title>设置数据隐私保护(未上线)</mu-list-item-title>
                 </mu-list-item-content>
                 <mu-list-item-action>
                     <mu-button icon>
@@ -42,7 +42,7 @@
         <mu-divider inset></mu-divider>
         <mu-list textline="two-line">
             <mu-sub-header inset>管理</mu-sub-header>
-            <mu-list-item avatar button @click="openPaper">
+            <mu-list-item avatar button to="/settings/tags">
                 <mu-list-item-action>
                     <mu-avatar color="blue">
                         <mu-icon value="assignment"></mu-icon>
@@ -51,71 +51,26 @@
                 <mu-list-item-content>
                     <mu-list-item-title>标签库</mu-list-item-title>
                 </mu-list-item-content>
-                <mu-list-item-action>
-                    <mu-button icon>
-                        <mu-icon value="info"></mu-icon>
-                    </mu-button>
-                </mu-list-item-action>
             </mu-list-item>
-            <mu-list-item avatar button @click="$router.push('/settings/test')">
+            <!--<mu-list-item avatar button to="/settings/test">-->
+                <!--<mu-list-item-action>-->
+                    <!--<mu-avatar color="blue">-->
+                        <!--<mu-icon value="assignment"></mu-icon>-->
+                    <!--</mu-avatar>-->
+                <!--</mu-list-item-action>-->
+                <!--<mu-list-item-content>-->
+                    <!--<mu-list-item-title>测试</mu-list-item-title>-->
+                <!--</mu-list-item-content>-->
+            <!--</mu-list-item>-->
+            <mu-list-item avatar button to="/settings/detail">
                 <mu-list-item-action>
                     <mu-avatar color="blue">
-                        <mu-icon value="assignment"></mu-icon>
+                        <mu-icon value="build"></mu-icon>
                     </mu-avatar>
                 </mu-list-item-action>
                 <mu-list-item-content>
-                    <mu-list-item-title>测试</mu-list-item-title>
+                    <mu-list-item-title>细节设定</mu-list-item-title>
                 </mu-list-item-content>
-                <mu-list-item-action>
-                    <mu-button icon>
-                        <mu-icon value="info"></mu-icon>
-                    </mu-button>
-                </mu-list-item-action>
-            </mu-list-item>
-            <mu-list-item avatar button>
-                <mu-list-item-action>
-                    <mu-avatar color="blue">
-                        <mu-icon value="assignment"></mu-icon>
-                    </mu-avatar>
-                </mu-list-item-action>
-                <mu-list-item-content>
-                    <mu-list-item-title>标签库</mu-list-item-title>
-                </mu-list-item-content>
-                <mu-list-item-action>
-                    <mu-button icon>
-                        <mu-icon value="info"></mu-icon>
-                    </mu-button>
-                </mu-list-item-action>
-            </mu-list-item>
-            <mu-list-item avatar button>
-                <mu-list-item-action>
-                    <mu-avatar color="blue">
-                        <mu-icon value="assignment"></mu-icon>
-                    </mu-avatar>
-                </mu-list-item-action>
-                <mu-list-item-content>
-                    <mu-list-item-title>标签库</mu-list-item-title>
-                </mu-list-item-content>
-                <mu-list-item-action>
-                    <mu-button icon>
-                        <mu-icon value="info"></mu-icon>
-                    </mu-button>
-                </mu-list-item-action>
-            </mu-list-item>
-            <mu-list-item avatar button>
-                <mu-list-item-action>
-                    <mu-avatar color="blue">
-                        <mu-icon value="assignment"></mu-icon>
-                    </mu-avatar>
-                </mu-list-item-action>
-                <mu-list-item-content>
-                    <mu-list-item-title>标签库</mu-list-item-title>
-                </mu-list-item-content>
-                <mu-list-item-action>
-                    <mu-button icon>
-                        <mu-icon value="info"></mu-icon>
-                    </mu-button>
-                </mu-list-item-action>
             </mu-list-item>
             <mu-list-item avatar button>
                 <mu-list-item-action>
@@ -146,6 +101,9 @@
 <script>
 	import LoginDialog from "./login-dialog";
 	import {mapState} from "vuex";
+    import init from '@/lib/init';
+    import {io} from '@/lib/io';
+    import localconfig from '@/lib/config/local';
 
 	export default {
 		name: "settings-manager",
@@ -193,11 +151,26 @@
 			closeDialog() {
 				this.dialogOpen = false;
 				this.dialog = null;
-			}
+			},
+            async userLogout(){
+                let ret = await this.$store.dispatch('logout');
+                if (ret.status === 'success') {
+                    console.log('set side list', init);
+                    this.$store.commit('setSideList', init.body);
+                    let item = init.body[0].children[0];
+                    let local = await io.fetchObj(item.prop);
+                    this.$store.commit('selectCatalog', {
+                        prop: item.prop,
+                        data: local.data,
+                        index: '0|0'});
+                    io.save(localconfig.dbname.side_list, {body: init.body});
+                }
+            }
 		},
 		mounted() {
 			this.$emit('setEnv', {title: '设置'});
-		},
+            this.$store.commit('setSync', this);
+        },
 		beforeRouteLeave(to, from, next) {
 			console.log('before route leave', to, this.$route);
 			if (to.path === '/')

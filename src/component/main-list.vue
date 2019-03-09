@@ -8,20 +8,29 @@
              @sort-end="moveEnd"
              v-model="list">
         {{listWatcher}}
-        <transition-group :name="moving?'':'flip-list'" tag="div">
+        <transition-group :name="moving?'':'flip-list'"
+                          tag="div">
+            <!--v-bind:css="false"-->
+            <!--v-on:before-enter="beforeEnter"-->
+            <!--v-on:enter="enter"-->
+            <!--v-on:leave="leave"-->
             <template v-for="(item,index) in showList">
                 <!--@click="expandTodo(index)"-->
-                <md-line :item="item" :key="item.index"
+                <md-line :item-index="item.index" :key="item.index"
+                         :style="{
+                            '--tdRmSpeed': settings.tdlist.delspeed+'ms',
+                            '--tdMoveSpeed': settings.tdlist.movespeed+'ms'
+                            }"
                          :index="item.index"
                          v-if="(item!=='add')&&(item!=='finish')"
                          @settle="(prop,value) => packChange(prop,value,item.index)"
                          @check="check(item,index)"
                          @delete="deleteTodo"
                          @moveItemStart="changeOrderStart"
-                         @moveItem="changeOrder"
                          @moveItemFinish="changeOrderFinish"
                          ref="listItems"
-                         @pushNotify="pe => $emit('pushNotify',pe)">{{item.index}}
+                         @pushNotify="pe => $emit('pushNotify',pe)">
+                    <!--{{item.index}}-->
                 </md-line>
                 <!--@contextmenu.native.prevent.stop="longTap(item,index)"-->
                 <mu-list-item :key="item" v-if="item==='add'">
@@ -52,29 +61,53 @@
         name: "main-list",
         components: {MdLine},
         data() {
+            let self = this;
             return {
                 create: null,
                 checkedList: [],
                 showList: ['add', 'finish'],
                 exclude: ['add', 'finish'],
-                canDrag: false,
+                canDrag: true,
                 moving: false,
                 list: [],
-                refresh: true
+                catalog: null
             }
         },
         computed: {
+            settings(vm){
+                return vm.$store.state.settings;
+            },
             listWatcher(vm) {
                 let ret = vm.$store.state.selected.catalog.data.todoList;
                 if (typeof ret === 'undefined') return;
                 this.list = ret;
-                if (this.refresh) {
+                if (this.catalog !== vm.$store.state.selected.catalog.prop) {
                     this.updateList();
-                    this.refresh = false;
+                    this.catalog = vm.$store.state.selected.catalog.prop;
+                    // this.moving = true;
+                    // this.$nextTick(() => {
+                    //     this.moving = false;
+                    // });
                 }
             }
         },
         methods: {
+            beforeEnter: function (el) {
+                el.style.opacity = 0;
+                el.style.transition = 'opacity .5s ease';
+            },
+            enter: function (el, done) {
+                el.style.opacity = 1;
+                setTimeout(function () {
+                    done();
+                }, 500);
+            },
+            leave: function (el, done) {
+                el.style.opacity = 0;
+                setTimeout(function () {
+                    done();
+                }, 500);
+            },
             createNewTodo() {
                 let self = this;
                 this.create = {
@@ -110,6 +143,7 @@
                 if (value !== '') {
                     this.create.label = value;
                     this.$emit('createTodo', this.create);
+                    this.updateList();
                 }
                 e.target.value = '';
                 this.create = null;
@@ -169,7 +203,9 @@
                     prop: ['todoList'],
                     value: beSave
                 };
-                this.$store.commit('saveOfCatalog', poc);
+                setTimeout(() => {
+                    this.$store.commit('saveOfCatalog', poc);
+                },500);
                 setTimeout(() => {
                     this.updateList();
                     this.moving = true;
@@ -179,7 +215,7 @@
                     this.$nextTick(() => {
                         this.moving = false;
                     });
-                },500);
+                }, 500);
             },
             updateList() {
                 while (this.showList.length > this.exclude.length) {
@@ -225,41 +261,29 @@
             //         }
             //     }
             // }
-            changeOrder(item, move, lastMove) {
-                let direct = 1;
-                if (move < 0) direct = -1;
-                let index = this.showList.indexOf(item);
-                let m = move - lastMove;
-                console.log('改变列表顺序', this.showList, index, move, lastMove);
-                let beReplace = this.showList[index + m];
-                console.log('要被替换的元素', beReplace);
-                if (this.exclude.includes(beReplace)) return;
-                this.showList[index] = beReplace;
-                this.showList[index + m] = item;
-                this.$forceUpdate();
-            },
+            // changeOrder(item, move, lastMove) {
+            //     let direct = 1;
+            //     if (move < 0) direct = -1;
+            //     let index = this.showList.indexOf(item);
+            //     let m = move - lastMove;
+            //     console.log('改变列表顺序', this.showList, index, move, lastMove);
+            //     let beReplace = this.showList[index + m];
+            //     console.log('要被替换的元素', beReplace);
+            //     if (this.exclude.includes(beReplace)) return;
+            //     this.showList[index] = beReplace;
+            //     this.showList[index + m] = item;
+            //     this.$forceUpdate();
+            // },
             changeOrderStart(item) {
                 console.log('main list hold', item);
                 this.$el.ontouchmove = e => e.preventDefault();
                 this.holdItem = item.index;
                 this.canDrag = true;
             },
-            changeOrderFinish(really) {
+            changeOrderFinish() {
                 this.$el.ontouchmove = null;
                 this.holdItem = null;
                 this.canDrag = false;
-                if (really) {
-                    let res = [];
-                    for (let i in this.showList) {
-                        let each = this.showList[i];
-                        if (!this.exclude.includes(each)) {
-                            each = Object.assign({}, each);
-                            each.index = i;
-                        }
-                        res.push(each);
-                    }
-                    console.log('调整顺序完成', res);
-                }
             },
             moveStart(event) {
                 console.log('move start', event, this.showList);
@@ -283,22 +307,33 @@
                 if (val.newIndex === this.list.length - 1) max--;
                 for (let i = min; i <= max; i++) {
                     tempList[i] = this.list[i + shouldOffset];
+                    console.log(i, '->', i + shouldOffset);
                 }
                 tempList[val.newIndex] = this.list[val.oldIndex];
                 for (let i = 0; i < tempList.length; i++) {
                     tempList[i].index = i;
                 }
-                let beSave = {
-                    prop: ['todoList'],
-                    value: tempList
-                };
-                this.$store.commit('saveOfCatalog', beSave);
+                // let beSave = {
+                //     prop: ['todoList'],
+                //     value: tempList
+                // };
+                // this.$store.commit('saveOfCatalog', beSave);
                 this.$nextTick(() => {
                     this.updateList();
                 });
-                beSave.prop.unshift(this.$store.state.selected.catalog.prop);
-                this.$store.state.io.saveRing(beSave.prop, beSave.value);
-
+                let bridge = [this.$store.state.selected.catalog.prop, 'todoList'];
+                // this.$store.state.io.saveRing(beSave.prop, beSave.value);
+                this.$store.commit('fixBridge', {
+                    old: bridge.concat(val.oldIndex),
+                    now: bridge.concat(val.newIndex)
+                });
+                this.$store.dispatch('saveTodoListChange', {
+                    value: tempList,
+                    prop: [],
+                    ext: {
+                        props: ['index']
+                    }
+                });
                 this.moving = false;
                 console.log('move finish', tempList, val);
             },
@@ -317,9 +352,6 @@
         },
         mounted() {
             // window.addEventListener('resize', this.siderOnResize);this.siderOnResize();
-        },
-        activated() {
-
         }
     }
 </script>
@@ -346,14 +378,18 @@
     }
 
     .flip-list-enter-active, .flip-list-leave-active {
-        transition: opacity .5s ease;
+        transition: opacity var(--tdRmSpeed) ease;
     }
 
-    .flip-list-enter, .flip-list-leave-to {
+    .flip-list-enter {
+        opacity: 0;
+    }
+
+    .flip-list-leave-to{
         opacity: 0;
     }
 
     .flip-list-move {
-        transition: transform .5s;
+        transition: transform var(--tdMoveSpeed);
     }
 </style>

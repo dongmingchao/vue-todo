@@ -4,6 +4,7 @@ import BgImageManager from "./component/settings/bg-image-manager";
 import SettingsManager from "./component/settings/manager";
 import SettingsTags from '@/component/settings/tags';
 import SettingsTest from '@/component/settings/test';
+import SettingsDetail from '@/component/settings/detail';
 import MainSettings from './component/main-setting';
 import TestBtn from '@/component/test-btn';
 import TdMain from '@/component/td-main';
@@ -37,6 +38,9 @@ export default [{
 	},{
 		path: 'test',
 		component: SettingsTest
+	},{
+		path: 'detail',
+		component: SettingsDetail
 	}]
 },{
 	path: '/test',

@@ -50,7 +50,15 @@
                          v-for="chip in chips" :key="chip.label">
                     {{chip.label}}
                 </mu-chip>
-                <mu-button color="primary">添加标签</mu-button>
+                <mu-chip>
+                    <mu-text-field v-model="create.tag"
+                                   @blur="addTag"
+                                   style="margin: 0;padding: 0;width: 5em;min-height: unset">
+                        <slot name="label" v-if="create.tag===''">
+                            <div style="position: absolute;pointer-events: none;">添加标签</div>
+                        </slot>
+                    </mu-text-field>
+                </mu-chip>
             </mu-list-item>
         </mu-list>
         <mu-text-field
@@ -69,12 +77,15 @@
         props: ['itemIndex']
         computed:
             item: (vm) ->
-                ret = vm.$store.state.selected.catalog.data.todoList[vm.itemIndex]
-                @loadInit(ret)
+                @hItem = vm.$store.state.selected.catalog.data.todoList[vm.itemIndex]
+                @loadInit(@hItem)
                 return;
 
         data: ->
+            hItem: null
             repeats: null
+            create:
+                tag: ''
             time: null
             date: null
             note: null
@@ -104,19 +115,20 @@
 
         methods:
             setTime: (type) ->
-                if (type == 'time')
+                if type is 'time'
                     @setValue type, @time.toJSON()
-                if (type == 'date')
+                if type is 'date'
                     @setValue type, @date.toJSON()
-                if (@date && @time)
+                if @date && @time
                     datetime = new Date(@date.getFullYear(),
-                            this.date.getMonth(),
-                            this.date.getDate(),
-                            this.time.getHours(),
-                            this.time.getMinutes(),
-                            this.time.getSeconds())
-#    this.item.datetime = datetime;
-#    this.$emit('pushNotify', this.item)
+                            @date.getMonth(),
+                            @date.getDate(),
+                            @time.getHours(),
+                            @time.getMinutes(),
+                            @time.getSeconds())
+                    mtd = Object.assign({}, @hItem)
+                    mtd.datetime = datetime;
+                    @$emit('pushNotify', mtd)
             setValue: (name, value)->
                 @$store.dispatch 'saveTodoListChange',
                     prop: [@itemIndex, name]
@@ -133,7 +145,7 @@
                 return
 
             loadInit: (e) ->
-                console.log 'load item',e
+                console.log 'load item', e
                 if e.time?
                     @time = new Date(e.time)
                 if e.date?
@@ -141,6 +153,14 @@
                 @note = e.note
                 @repeats = e.repeats
                 @chips = e.tags
+
+            addTag: () ->
+                return if @create.tag is ''
+                @chips.push
+                    label: @create.tag
+                    color: 'primary'
+                @create.tag = ''
+                @setValue 'tags', @chips
 
     }
 </script>

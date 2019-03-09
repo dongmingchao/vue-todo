@@ -15,12 +15,12 @@
         <!--:list="todoList"-->
         <!--placeholder="添加新的待做事项"/>-->
         <!--<keep-alive>-->
-            <router-view @settle="saveTodoListChange"
-                         @createTodo="setNewTodo"
-                         @delete="deleteTodo"
-                         @pushNotify="pushNotification"
-                         @event:focus="e => eKeyBoard(e,$refs.list)"
-                         ref="list"/>
+        <router-view @settle="saveTodoListChange"
+                     @createTodo="setNewTodo"
+                     @delete="deleteTodo"
+                     @pushNotify="pushNotification"
+                     @event:focus="e => eKeyBoard(e,$refs.list)"
+                     ref="list"/>
         <!--</keep-alive>-->
         <mu-snackbar position="bottom-end" :color="toast.color" :open.sync="toast.open">
             {{toast.message}}
@@ -33,7 +33,7 @@
     import MdHeader from "./main-header";
     import MdSider from "./md-sider";
     import {io, Sync} from '../lib/io/index';
-    import config from '../lib/config';
+    import localconfig from '@/lib/config/local';
     import moment from 'moment';
     import media from '../lib/media';
     import MainSetting from "./main-setting";
@@ -53,7 +53,6 @@
                 },
                 selectedCatalog: null,
                 drawer: null,
-                sideList: null,
                 device: null,
                 mat: null,
                 toast: {
@@ -66,26 +65,9 @@
         },
         computed: {
             ...mapState({
-                todoList: state => state.selected.catalog.data.todoList
-            }),
-            rotateIcon() {
-                return [
-                    'menu-icon',
-                    this.isCollapsed ? '' : 'rotate-icon'
-                ];
-            },
-            menuitemClasses: function () {
-                return [
-                    'menu-item',
-                    this.isCollapsed ? 'collapsed-menu' : ''
-                ]
-            },
-            daemon(vm) {
-                console.log('todo list', vm.todoList);
-                if (!vm.todoList) return;
-                this.selectedCatalog.data.todoList = vm.todoList;
-                io.save(this.selectedCatalog.prop, this.selectedCatalog.data);
-            }
+                todoList: state => state.selected.catalog.data.todoList,
+                sideList: state => state.selected.side_list
+            })
         },
         methods: {
             postToast(opts) {
@@ -131,17 +113,15 @@
             },
             setNewTodo(ntd) {
                 console.log('set new todo list event', ntd.index);
-                //TODO 新创建的没有id 整个函数都要改 使用$store.io.sync
                 this.$store.dispatch('addTodoItem', ntd);
             },
             refreshCatalog() {
                 this.sync.catalogs.list();
                 this.$store.dispatch('releaseWaiters');
             },
-            async setCatalog(item) {
+            async setCatalog(item, locate) {
                 if (typeof item.prop === 'undefined') return;
                 let local = await io.fetchObj(item.prop);
-                console.log('set catalog', item, local);
                 //第一次安装app的默认清单
                 if (local === null) {
                     if (item.path instanceof Object)
@@ -157,8 +137,13 @@
                     this.saveRing([item.prop, 'todoList'], list);
                     local.data.todoList = list;
                 }
-                // this.todoList = list;
-                this.selectedCatalog = {prop: item.prop, data: local.data, index: this.sideList.indexOf(item)};
+                let [x,y] = locate;
+                let index = 0;
+                for (let i = 0; i < x; i++) {
+                    index += this.sideList[i].children.length;
+                }
+                index += y;
+                this.selectedCatalog = {prop: item.prop, data: local.data, index: index};
                 this.$store.commit('selectCatalog', this.selectedCatalog);
             },
             deleteTodo(todo) {
@@ -191,7 +176,7 @@
                     "todoList": []
                 };
                 io.save(item.prop, local);
-                io.save('side_list', {body: this.sideList});
+                io.save(localconfig.dbname.side_list, {body: this.sideList});
                 this.sync.catalogs.add(item);
             },
             ready(e) {
@@ -205,16 +190,17 @@
                 console.log('delete catalog', prop);
                 this.sync.catalogs.remove(prop);
                 io.remove(prop);
-                this.setCatalog(this.sideList[1]);
-                io.save('side_list', {body: this.sideList});
+                this.setCatalog(this.sideList[0].children[0], [0, 0]);
+                io.save(localconfig.dbname.side_list, {body: this.sideList});
             },
             pushNotification(target) {
-                let id = '' + this.selectedCatalog.index + target.index;
+                console.log('post notify', target);
+                let id = this.selectedCatalog.index;
                 if (this.device) {
                     this.device.notification.post({
-                        id: parseInt(id),
+                        id: id,
                         title: target.label,
-                        text: target.content,
+                        text: target.content ? target.content : target.note,
                         trigger: {at: target.datetime}
                     });
                 }
@@ -256,15 +242,15 @@
             this.sync = new Sync(this);
             this.mat = document.createElement('div');
             this.mat.style.width = '100%';
-            io.fetchObj('side_list').then(ret => {
+            io.fetchObj(localconfig.dbname.side_list).then(ret => {
                 let li;
                 if (ret === null)
-                    li = init.body;
+                    li = JSON.parse(JSON.stringify(init.body));
                 else li = ret.data.body;
                 this.loading.side = false;
-                this.sideList = li;
-                this.setCatalog(li[0].children[0]);
-                io.save('side_list', {body: this.sideList});
+                this.$store.commit('setSideList', li);
+                this.setCatalog(li[0].children[0], [0, 0]);
+                io.save(localconfig.dbname.side_list, {body: li});
             });
             document.addEventListener('deviceready', this.ready);
             window.addEventListener('native.keyboardshow', this.keyboardShow);

@@ -11,11 +11,11 @@
 		name: 'app',
 		data() {
 			return {
-				sync: 233
             }
 		},
         mounted(){
 		    this.$store.dispatch('activateWaiter');
+            this.$store.dispatch('activateSettings');
         }
 	}
 </script>

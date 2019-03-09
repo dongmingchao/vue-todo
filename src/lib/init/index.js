@@ -13,26 +13,27 @@ export default {
 					"icon": "move_to_inbox",
 					"label": "归档",
 					"path": document,
-					"prop": "document"
+					"prop": "local|document"
 				},
-				{
-					"icon": "star",
-					"label": "收藏",
-					"path": "./apis/marked.json",
-					"prop": "marked"
-				},
-				{
-					"icon": "email",
-					"label": "日记",
-					"path": "./apis/diary.json",
-					"prop": "diary"
-				},
-				{
-					"icon": "backup",
-					"label": "云端",
-					"path": cloud,
-					"prop": "cloud"
-				}]
+				// {
+				// 	"icon": "star",
+				// 	"label": "收藏",
+				// 	"path": "./apis/marked.json",
+				// 	"prop": "marked"
+				// },
+				// {
+				// 	"icon": "email",
+				// 	"label": "日记",
+				// 	"path": "./apis/diary.json",
+				// 	"prop": "diary"
+				// },
+				// {
+				// 	"icon": "backup",
+				// 	"label": "云端",
+				// 	"path": cloud,
+				// 	"prop": "cloud"
+				// }
+				]
 		},
 		{
 			"label": "自定义清单",
@@ -41,7 +42,7 @@ export default {
 					"icon": "book",
 					"label": "草稿",
 					"path": draft,
-					"prop": "draft"
+					"prop": "local|draft"
 				}
 			]
 		},

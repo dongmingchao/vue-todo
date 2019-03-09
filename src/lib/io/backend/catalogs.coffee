@@ -2,6 +2,7 @@ import io from '../io'
 import config from '@/lib/config'
 import flatland from '@/assets/flatland.jpg'
 import moment from 'moment'
+import localconfig from '@/lib/config/local'
 
 export default (mc,cessor) ->
 	@list = ->
@@ -37,7 +38,7 @@ export default (mc,cessor) ->
 								actions: each.actions
 							todoList: null
 						)
-				io.save('side_list', body: mc.sideList)
+				io.save(localconfig.dbname.side_list, body: mc.sideList)
 
 	@add = (item) ->
 		cessor.process

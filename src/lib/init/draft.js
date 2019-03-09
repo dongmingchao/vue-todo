@@ -8,9 +8,9 @@ export default {
 		"date": "10月2日 星期五",
 		"bgimg":flatland,
 		"actions": [
-			{
-				"name": "排序"
-			},
+			// {
+			// 	"name": "排序"
+			// },
 			{
 				"name": "设置背景图",
 				"want": "set-background-image"

@@ -1,3 +1,5 @@
+import Vue from 'vue'
+
 export default {
 	state:
 		prop: null
@@ -6,6 +8,7 @@ export default {
 		index: null
 	mutations:
 		selectCatalog: (state, catalog) ->
+			console.log('set catalog index', catalog.index)
 			state.prop = catalog.prop
 			state.data = catalog.data
 			state.index = catalog.index
@@ -21,26 +24,33 @@ export default {
 					res[key] = {}
 				res = res[key]
 				key = prop[k + 1]
-			res[key] = value
+			Vue.set(res, key, value);
+		addTodoItem: (state, item) ->
+			state.data.todoList.push item
+
 
 	actions:
 		addTodoItem: ({state, commit, rootState}, item) ->
-			state.data.todoList.push item
+			commit 'addTodoItem', item
 			rootState.io.sync.tasks.add state.prop, item
-			rootState.io.saveRing [state.prop],state.data
+			rootState.io.saveRing [state.prop], state.data
 
 
 		saveTodoListChange: ({state, commit, rootState}, pv) ->
 			pv.prop.unshift 'todoList'
 			commit 'saveOfCatalog', pv
 
-			item = rootState.selected.catalog.data.todoList[pv.prop[1]]
-			if item.id?
-				id = item.id
-				ntd = { index: item.index }
-				ntd[pv.prop[2]] = pv.value
-				rootState.io.sync.tasks.update id, ntd
+			if {}.toString.call(pv.prop[1]) is '[object Number]'
+				item = rootState.selected.catalog.data.todoList[pv.prop[1]]
+				if item.id? then rootState.io.sync.tasks.update item, [pv.prop[2]]
+			else if pv.ext.props #修改index的时候用到
+				for item in pv.value
+					if item.id? then rootState.io.sync.tasks.update item, pv.ext.props
+			pv.prop.unshift(state.prop)
+			rootState.io.saveRing pv.prop, pv.value
 
+		saveAll: ({state, commit, rootState}, pv) ->
+			commit 'saveOfCatalog', pv
 			pv.prop.unshift(state.prop)
 			rootState.io.saveRing pv.prop, pv.value
 }

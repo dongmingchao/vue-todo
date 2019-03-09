@@ -4,6 +4,7 @@ import flatland from '../../assets/flatland.jpg'
 import b_catalogs from './backend/catalogs.coffee'
 import b_tasks from './backend/tasks.coffee'
 import b_tags from './backend/tags.coffee'
+import b_users from './backend/users.coffee'
 
 class TextProcessor
 	constructor: (@self,@processors) ->
@@ -20,6 +21,7 @@ class Sync
 		@catalogs = new b_catalogs @mc,@cessor
 		@tasks = new b_tasks @mc,@cessor
 		@tags = new b_tags @mc,@cessor
+		@users = new b_users @mc,@cessor
 
 	userStatusProcessor: (des) ->
 		switch @mc.$store.state.user.shortStatus
@@ -32,10 +34,11 @@ class Sync
 		switch ret.status
 			when 'success' then des.success(ret.data)
 			else
-				des.finally(ret.data)
+				des.finally(ret)
 
 	updateLocalProcessor: (des, ret) ->
 		modified = await ret
+		console.log 'modified',modified
 		bridge = des.bridge
 		return ret if bridge is undefined or modified is undefined or modified.status is not 'success'
 		await @mc.$store.state.io.saveRing bridge.props, modified.data
