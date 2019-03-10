@@ -22,7 +22,7 @@ export default (mc, cessor) ->
 					url: config.host + config.user.signUp.api
 					data: form
 			success: (ret) ->
-				ret
+				status: 'success'
 			finally: (ret) ->
 				ret
 

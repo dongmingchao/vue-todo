@@ -137,10 +137,10 @@
 			openPaper(config) {
 				this.st.openFullscreenDialog('/settings/tags');
 			},
-			postToast(opts) {
+			postToast(opts,autoClose = true) {
 				this.toast = Object.assign(this.toast, opts);
 				this.toast.open = true;
-				setTimeout(() => {
+				if (autoClose) setTimeout(() => {
 					this.toast.open = false;
 				}, 3000);
 			},

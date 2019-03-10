@@ -30,17 +30,7 @@ export default
 			else return user
 
 		signUp: ({state, commit, rootState}, form) ->
-			ret = await rootState.io.sync.users.signUp form
-			if ret.user?
-				user = {}
-				user.shortStatus = '在线'
-				user.status = '使用网络数据'
-				user.statusLED = 'primary'
-				user.name = ret.user.name
-				commit 'login', user
-				return status: 'success'
-			else return user
-
+			await rootState.io.sync.users.signUp form
 
 		logout: ({state, commit, rootState}) ->
 			ret = await await rootState.io.sync.users.logout()

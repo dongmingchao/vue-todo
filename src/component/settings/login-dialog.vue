@@ -85,10 +85,8 @@
                 if (pass) {
                     this.loading.sign = true;
                     let ret = await this.$store.dispatch('signUp', this.validateForm);
-                    console.log('resp', ret);
                     if (ret.status === 'success') {
-                        this.host.postToast({message: '注册成功', color: 'success'});
-                        this.host.closeDialog();
+                        this.host.postToast({message: '请检查您的邮箱并点击验证'},false);
                     }
                     this.loading.sign = false;
                 }
