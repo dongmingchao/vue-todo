@@ -93,8 +93,8 @@
             rows: 2
             rowsMax: 7
             repeatTerm: [
-                icon: '无',
-                label: '无'
+                icon: '单',
+                label: '单次'
             ,
                 icon: '天',
                 label: '每天'

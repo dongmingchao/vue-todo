@@ -81,7 +81,9 @@
         },
         computed: {
             item(vm) {
+                this.deleteShow = false;
                 let itm = vm.$store.state.selected.catalog.data.todoList[vm.itemIndex];
+                if (typeof itm === 'undefined') return;
                 if (itm.date && itm.time) {
                     let date = itm.date.slice(0, 10);
                     let time = itm.time.slice(10);

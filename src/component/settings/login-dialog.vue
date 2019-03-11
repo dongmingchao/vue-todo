@@ -1,16 +1,17 @@
 <template>
     <mu-container>
         <mu-form ref="form" :model="validateForm">
-            <mu-form-item label="邮箱" prop="username" :rules="usernameRules">
-                <mu-text-field v-model="validateForm.username" prop="username"></mu-text-field>
+            <mu-form-item label="邮箱" label-float prop="username" :rules="usernameRules">
+                <mu-text-field v-model="validateForm.username"
+                               prop="username"></mu-text-field>
             </mu-form-item>
-            <mu-form-item label="密码" help-text="密码长度在6到20位，至少包含两种类型" prop="password" :rules="passwordRules">
+            <mu-form-item label="密码" label-float help-text="密码长度在6到20位，至少包含两种类型" prop="password" :rules="passwordRules">
                 <mu-text-field type="password" v-model="validateForm.password" prop="password"></mu-text-field>
             </mu-form-item>
             <!--<mu-form-item prop="isAgree" :rules="argeeRules">-->
                 <!--<mu-checkbox label="同意用户协议" v-model="validateForm.isAgree"></mu-checkbox>-->
             <!--</mu-form-item>-->
-            <mu-form-item>
+            <mu-flex justify-content="around" align-items="center" align-content="around">
                 <mu-button color="primary" @click="submit">
                     <label style="margin-left: 15px">登陆</label>
                     <mu-circular-progress :style="{opacity: loading.login?1:0}" style="display: flex;" color="#fff"
@@ -24,7 +25,7 @@
                                           :size="18"/>
                 </mu-button>
                 <mu-button @click="cancel">取消</mu-button>
-            </mu-form-item>
+            </mu-flex>
         </mu-form>
     </mu-container>
 </template>

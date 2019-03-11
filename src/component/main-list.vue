@@ -25,7 +25,7 @@
                          v-if="(item!=='add')&&(item!=='finish')"
                          @settle="(prop,value) => packChange(prop,value,item.index)"
                          @check="check(item,index)"
-                         @delete="deleteTodo"
+                         @delete="itm => deleteTodo(itm, index)"
                          @moveItemStart="changeOrderStart"
                          @moveItemFinish="changeOrderFinish"
                          ref="listItems"
@@ -74,7 +74,7 @@
             }
         },
         computed: {
-            settings(vm){
+            settings(vm) {
                 return vm.$store.state.settings;
             },
             listWatcher(vm) {
@@ -113,7 +113,7 @@
                 this.create = {
                     createdAt: new Date(),
                     favorite: false,
-                    repeats: '无',
+                    repeats: '单次',
                     tags: [{
                         label: '随笔',
                         color: 'primary'
@@ -205,7 +205,7 @@
                 };
                 setTimeout(() => {
                     this.$store.commit('saveOfCatalog', poc);
-                },500);
+                }, 500);
                 setTimeout(() => {
                     this.updateList();
                     this.moving = true;
@@ -246,11 +246,12 @@
                     this.showList.push(each);
                 }
             },
-            deleteTodo(item) {
-                let index = this.showList.indexOf(item);
+            deleteTodo(item, index) {
                 this.showList.splice(index, 1);
-                this.$emit('delete', item);
-                console.log('delete a todo!!', item);
+                setTimeout(() => {
+                    this.$emit('delete', item);
+                }, this.settings.tdlist.delspeed);
+                console.log('delete a todo!!', item, this.showList);
             },
             // catalogChange(){
             //     this.checkedList = [[],[]];
@@ -385,7 +386,7 @@
         opacity: 0;
     }
 
-    .flip-list-leave-to{
+    .flip-list-leave-to {
         opacity: 0;
     }
 

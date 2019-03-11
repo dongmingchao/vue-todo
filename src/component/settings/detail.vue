@@ -5,10 +5,13 @@
             <mu-list-item-content>
                 <mu-list-item-title>删除一条、展现新列表</mu-list-item-title>
                 <mu-list-item-sub-title>
-                    <mu-row gutter>
+                    <mu-row gutter align-items="center">
                         <mu-col span="1" style="text-align: center">快</mu-col>
                         <mu-col span="10">
-                            <mu-slider :step="10" :max="700" :min="100" v-model="tdlist.rmSpeed" :display-value="false"/>
+                            <mu-slider :step="10"
+                                       :max="700"
+                                       style="margin-top: 16px;"
+                                       :min="100" v-model="tdlist.rmSpeed" :display-value="false"/>
                         </mu-col>
                         <mu-col span="1" style="text-align: center">慢</mu-col>
                     </mu-row>
@@ -19,10 +22,13 @@
             <mu-list-item-content>
                 <mu-list-item-title>移动</mu-list-item-title>
                 <mu-list-item-sub-title>
-                    <mu-row gutter>
+                    <mu-row gutter align-items="center">
                         <mu-col span="1" style="text-align: center">快</mu-col>
                         <mu-col span="10">
-                            <mu-slider :step="10" :max="700" :min="100" v-model="tdlist.moveSpeed" :display-value="false"/>
+                            <mu-slider :step="10"
+                                       style="margin-top: 16px;"
+                                       :max="700"
+                                       :min="100" v-model="tdlist.moveSpeed" :display-value="false"/>
                         </mu-col>
                         <mu-col span="1" style="text-align: center">慢</mu-col>
                     </mu-row>

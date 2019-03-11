@@ -126,10 +126,10 @@
                 let local = await io.fetchObj(item.prop);
                 //第一次安装app的默认清单
                 if (local === null) {
-                    if (item.path instanceof Object)
+                    if (item.path instanceof Object) {
                         local = {data: item.path};
-                    else local = await io.fetch(item.path);
-                    io.save(item.prop, local.data);
+                        io.save(item.prop, local.data);
+                    }
                 }
                 // this.title = local.data.title;
                 // this.$store.commit('selectedCatalogTitle', local.data.title);
@@ -148,11 +148,20 @@
                 this.selectedCatalog = {prop: item.prop, data: local.data, index: index};
                 this.$store.commit('selectCatalog', this.selectedCatalog);
             },
-            deleteTodo(todo) {
-                this.todoList.splice(this.todoList.indexOf(todo), 1);
-                this.sync.tasks.remove(todo);
-                this.selectedCatalog.data.todoList = this.todoList;
-                io.save(this.selectedCatalog.prop, this.selectedCatalog.data);
+            deleteTodo(itm) {
+                this.sync.tasks.remove(itm);
+                let list = this.todoList.slice();
+
+                for (let i = itm.index; i < this.todoList.length - 1; i++) {
+                    list[i] = list[i+1];
+                    list[i].index--;
+                }
+                list.pop();
+                this.$store.dispatch('saveTodoListChange',{
+                    prop: [],
+                    value: list,
+                    ext: ['index']
+                });
             },
             // async getSideList() {
             // 	return await io.autofetch('side_list', './apis/sidelist.json');
