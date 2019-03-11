@@ -73,6 +73,7 @@ export default {
     async request(options) {
         let request = new Promise((r, j) => {
             let oReq = new XMLHttpRequest();
+            oReq.withCredentials = true;
             oReq.open(options.method, options.url);
             oReq.setRequestHeader('Content-Type', 'application/json');
             oReq.send(JSON.stringify(options.data));
