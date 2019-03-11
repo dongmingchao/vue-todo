@@ -15,12 +15,14 @@
         <!--:list="todoList"-->
         <!--placeholder="添加新的待做事项"/>-->
         <!--<keep-alive>-->
-        <router-view @settle="saveTodoListChange"
-                     @createTodo="setNewTodo"
-                     @delete="deleteTodo"
-                     @pushNotify="pushNotification"
-                     @event:focus="e => eKeyBoard(e,$refs.list)"
-                     ref="list"/>
+        <transition name="fade">
+            <router-view @settle="saveTodoListChange"
+                         @createTodo="setNewTodo"
+                         @delete="deleteTodo"
+                         @pushNotify="pushNotification"
+                         @event:focus="e => eKeyBoard(e,$refs.list)"
+                         ref="list"/>
+        </transition>
         <!--</keep-alive>-->
         <mu-snackbar position="bottom-end" :color="toast.color" :open.sync="toast.open">
             {{toast.message}}
@@ -137,7 +139,7 @@
                     this.saveRing([item.prop, 'todoList'], list);
                     local.data.todoList = list;
                 }
-                let [x,y] = locate;
+                let [x, y] = locate;
                 let index = 0;
                 for (let i = 0; i < x; i++) {
                     index += this.sideList[i].children.length;
@@ -260,10 +262,6 @@
 </script>
 <style scoped>
 
-    .flip-list-move {
-        transition: transform 1s;
-    }
-
     .main-body {
         /*width: calc(100% - 256px);*/
         /*left: 256px;*/
@@ -277,5 +275,16 @@
         .main-body {
             padding-left: 0;
         }
+    }
+
+    .fade-enter-active {
+        transition: opacity .3s ease;
+    }
+    .fade-leave-active {
+        transition: opacity .15s ease;
+    }
+    .fade-enter, .fade-leave-to{
+        pointer-events: none;
+        opacity: 0;
     }
 </style>

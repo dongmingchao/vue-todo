@@ -18,7 +18,7 @@
 </template>
 
 <script>
-	import config from '../lib/config';
+	import backend from '../lib/config/backend';
 	import {io} from '../lib/io/';
 
 	export default {
@@ -48,15 +48,15 @@
 			checkLogin() {
 				io.request({
 					method: 'GET',
-					url: config.host + config.user.checkStatus.api,
+					url: backend.host + backend.prefix + backend.user.checkStatus.api,
 				}).then(ret => {
 					if (ret.status === 'success') {
-						this.$store.commit('login',Object.assign(config.online.user, ret.user));
+						this.$store.commit('login',Object.assign(backend.online.user, ret.user));
 					}
 				}).catch(err => {
 					if (err.status === 'net error') {
 						console.log('网络错误', err.code);
-						this.$store.commit('login',config.offline.user);
+						this.$store.commit('login',backend.offline.user);
 					} else console.log(err);
 				});
 			}

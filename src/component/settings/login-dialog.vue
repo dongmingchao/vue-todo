@@ -29,8 +29,7 @@
     </mu-container>
 </template>
 <script>
-    import {io} from '@/lib/io/';
-    import config from '@/lib/config';
+    import {io} from '@/lib/io';
 
     export default {
         name: "login-dialog",

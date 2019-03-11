@@ -134,7 +134,7 @@
 			}
 		},
 		methods: {
-			openPaper(config) {
+			openPaper() {
 				this.st.openFullscreenDialog('/settings/tags');
 			},
 			postToast(opts,autoClose = true) {

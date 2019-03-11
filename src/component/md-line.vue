@@ -57,6 +57,7 @@
     import {ElementMixin} from 'vue-slicksort';
     import countdown from '@chenfengyuan/vue-countdown';
     import moment from 'moment';
+    import 'jquery.event.move';
 
     export default {
         name: "md-line",
@@ -85,7 +86,7 @@
                     let date = itm.date.slice(0, 10);
                     let time = itm.time.slice(10);
                     this.datetime = new Date(date + time);
-                }
+                } else this.datetime = null;
                 if (itm.id) this.syncStatus = 'cloud_done';
                 else this.syncStatus = null;
                 return itm;

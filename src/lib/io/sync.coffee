@@ -1,5 +1,4 @@
 import io from './io'
-import config from '../config'
 import flatland from '../../assets/flatland.jpg'
 import b_catalogs from './backend/catalogs.coffee'
 import b_tasks from './backend/tasks.coffee'

@@ -1,5 +1,5 @@
 import io from '../io'
-import config from '@/lib/config'
+import backend from '@/lib/config/backend'
 import flatland from '@/assets/flatland.jpg'
 import moment from 'moment'
 import localconfig from '@/lib/config/local'
@@ -11,10 +11,9 @@ export default (mc,cessor) ->
 				mc.postToast(message: '正在获取分类')
 				io.request
 					method: 'GET'
-					url: config.host + config.catalog.list.api
+					url: backend.host + backend.prefix + backend.catalog.list.api
 			success: (ret) ->
 				netCatalog = ret.catalogs
-				console.log 'net catalog', netCatalog
 				for each in netCatalog
 					if each.type is null
 						sideL = mc.sideList[1].children
@@ -46,7 +45,7 @@ export default (mc,cessor) ->
 				mc.postToast(message: '同步保存中')
 				io.request
 					method: 'POST',
-					url: config.host + config.catalog.add.api,
+					url: backend.host + backend.prefix + backend.catalog.add.api,
 					data:
 						icon: item.icon
 						bgimg: flatland
@@ -65,7 +64,7 @@ export default (mc,cessor) ->
 			online: ->
 				io.request
 					method: 'POST'
-					url: config.host + config.catalog.remove.api
+					url: backend.host + backend.prefix + backend.catalog.remove.api
 					data:
 						id: id
 			success: (ret) ->

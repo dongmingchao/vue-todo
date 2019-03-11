@@ -1,5 +1,5 @@
 import io from '../io'
-import config from '@/lib/config'
+import backend from '@/lib/config/backend'
 
 export default (mc, cessor) ->
 	@login = (form) ->
@@ -7,7 +7,7 @@ export default (mc, cessor) ->
 			offline: ->
 				io.request
 					method: 'POST'
-					url: config.host + config.user.login.api
+					url: backend.host + backend.prefix + backend.user.login.api
 					data: form
 			success: (ret) ->
 				ret
@@ -19,7 +19,7 @@ export default (mc, cessor) ->
 			offline: ->
 				io.request
 					method: 'POST'
-					url: config.host + config.user.signUp.api
+					url: backend.host + backend.prefix + backend.user.signUp.api
 					data: form
 			success: (ret) ->
 				status: 'success'
@@ -32,7 +32,7 @@ export default (mc, cessor) ->
 			online: ->
 				io.request
 					method: 'GET'
-					url: config.host + config.user.logout.api
+					url: backend.host + backend.prefix + backend.user.logout.api
 			success: (ret) ->
 				mc.postToast
 					message: '已注销',

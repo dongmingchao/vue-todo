@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="height: calc(100% - 10rem);">
         {{item}}
         <mu-list :dense="true" textline="two-line" nested-indent style="list-style-type: none;overflow: hidden;">
             <!--<md-list :list="item.steps"-->

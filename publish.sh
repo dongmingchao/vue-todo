@@ -2,6 +2,7 @@
 
 # go to the output directory and create a new git repo
 cp src/assets/* dist/
+cp plantform/browser/* dist/
 mkdir output
 cp -r dist output/
 cp -r apis output/

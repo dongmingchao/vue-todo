@@ -1,16 +1,15 @@
 import io from '../io'
-import config from '@/lib/config'
+import backend from '@/lib/config/backend'
 import localconfig from '@/lib/config/local'
 
 export default (mc, cessor) ->
 	@list = (id) ->
-		console.log 'task list',config.host + config.task.list.api
 		cessor.process
 			online: ->
 				mc.postToast(message: '正在获取清单')
 				io.request
 					method: 'POST'
-					url: config.host + config.task.list.api
+					url: backend.host + backend.prefix + backend.task.list.api
 					data:
 						catalogId: id
 			success: (ret) ->
@@ -26,7 +25,7 @@ export default (mc, cessor) ->
 				mc.postToast(message: '正在保存')
 				io.request
 					method: 'POST'
-					url: config.host + config.task.add.api
+					url: backend.host + backend.prefix + backend.task.add.api
 					data:
 						catalogId: id
 						item: item
@@ -57,7 +56,7 @@ export default (mc, cessor) ->
 			online: ->
 				io.request
 					method: 'POST'
-					url: config.host + config.task.remove.api
+					url: backend.host + backend.prefix + backend.task.remove.api
 					data:
 						id: td.id
 			offline: ->
@@ -86,7 +85,7 @@ export default (mc, cessor) ->
 			online: ->
 				io.request
 					method: 'POST'
-					url: config.host + config.task.update.api
+					url: backend.host + backend.prefix + backend.task.update.api
 					data:
 						id: item.id
 						item: ntd

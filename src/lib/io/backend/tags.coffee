@@ -1,5 +1,5 @@
 import io from '../io'
-import config from '@/lib/config'
+import backend from '@/lib/config/backend'
 
 export default (mc,cessor) ->
 	@list = ->
@@ -7,7 +7,7 @@ export default (mc,cessor) ->
 			online: ->
 				io.request
 					method: 'GET'
-					url: config.host + config.tag.list.api
+					url: backend.host + backend.prefix + backend.tag.list.api
 			success: (ret) ->
 				ret.tags
 	return

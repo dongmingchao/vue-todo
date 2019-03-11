@@ -1,7 +1,7 @@
 <template>
     <md-list lockAxis="y"
              class="main-list"
-             :pressDelay="200"
+             :pressDelay="1000"
              helperClass="mu-list mu-list-two-line moveFix"
              :shouldCancelStart="cancelMove"
              @sort-start="moveStart"
