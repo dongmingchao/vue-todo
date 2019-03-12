@@ -29,6 +29,10 @@
         color: #2196f3;
     }
 
+    .mu-chip input{
+        text-align: center;
+    }
+
     /*
     .touchPoint{
         max-height:${document.documentElement.clientHeight}px;

@@ -53,9 +53,9 @@
                 <mu-chip>
                     <mu-text-field v-model="create.tag"
                                    @blur="addTag"
-                                   style="margin: 0;padding: 0;width: 5em;min-height: unset">
+                                   class="td-main-add-tag">
                         <slot name="label" v-if="create.tag===''">
-                            <div style="position: absolute;pointer-events: none;">添加标签</div>
+                            <div class="add-tag-label">添加标签</div>
                         </slot>
                     </mu-text-field>
                 </mu-chip>
@@ -181,5 +181,18 @@
 
     .tag-chip {
         margin: 0 10px;
+    }
+
+    .td-main-add-tag{
+        margin: 0;
+        padding: 0;
+        width: 5rem;
+        min-height: unset;
+    }
+
+    .td-main-add-tag .add-tag-label{
+        position: absolute;
+        pointer-events: none;
+        left: 0.5rem;
     }
 </style>
