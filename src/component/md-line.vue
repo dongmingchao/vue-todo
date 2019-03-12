@@ -76,7 +76,11 @@
                 star: null,
                 datetime: null,
                 readyMove: false,
-                syncStatus: null
+                syncStatus: null,
+                origin:{
+                    item: null,
+                    catalogProp: null
+                }
             }
         },
         computed: {
@@ -84,6 +88,9 @@
                 this.deleteShow = false;
                 let itm = vm.$store.state.selected.catalog.data.todoList[vm.itemIndex];
                 if (typeof itm === 'undefined') return;
+                this.applyUpdate(itm);
+                this.origin.catalogProp = this.$store.state.selected.catalog.prop;
+                this.origin.item = itm;
                 if (itm.date && itm.time) {
                     let date = itm.date.slice(0, 10);
                     let time = itm.time.slice(10);
@@ -98,6 +105,16 @@
             }
         },
         methods: {
+            applyUpdate(item) {
+                if (this.origin.catalogProp !== this.$store.state.selected.catalog.prop) return;
+                if (this.origin.item === null) {
+                    this.origin.item = item;
+                    return;
+                }
+                if (this.origin.item.label === item.label) return;
+                // console.log('item改变',this.origin.item , item);
+                if (item.id) this.$store.state.io.sync.tasks.update(item, ['index']);
+            },
             showRestTime(val) {
                 let day = val.days === 0 ? '' : val.days + '天';
                 let hour = val.hours === 0 ? '' : val.hours + '小时';

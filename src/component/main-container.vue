@@ -100,12 +100,8 @@
                 console.log('save ring', res, key, value);
                 io.save(prop[0], storgae.data);
             },
-
             saveTodoListChange(prop, value) {
-                prop.unshift('todoList');
-                prop.unshift(this.selectedCatalog.prop);
-                console.log('save change', 'todoList', prop, value);
-                this.saveRing(prop, value);
+                this.$store.dispatch('saveTodoListChange',{ prop,value })
             },
             saveHeaderChange(prop, value) {
                 prop.unshift('title');

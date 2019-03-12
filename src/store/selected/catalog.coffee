@@ -39,13 +39,6 @@ export default {
 		saveTodoListChange: ({state, commit, rootState}, pv) ->
 			pv.prop.unshift 'todoList'
 			commit 'saveOfCatalog', pv
-
-			if {}.toString.call(pv.prop[1]) is '[object Number]'
-				item = rootState.selected.catalog.data.todoList[pv.prop[1]]
-				if item.id? then rootState.io.sync.tasks.update item, [pv.prop[2]]
-			else if pv.ext.props #修改index的时候用到
-				for item in pv.value
-					if item.id? then rootState.io.sync.tasks.update item, pv.ext.props
 			pv.prop.unshift(state.prop)
 			rootState.io.saveRing pv.prop, pv.value
 
