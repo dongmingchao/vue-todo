@@ -28,6 +28,7 @@
             {{toast.message}}
             <mu-button flat slot="action" color="#fff" @click="toast.open = false">关闭</mu-button>
         </mu-snackbar>
+        <add-line v-if="false" ref="edit"/>
     </div>
 </template>
 <script>
@@ -43,10 +44,11 @@
     import init from '../lib/init';
     import {mapState} from 'vuex';
     import MainList from "@/component/main-list";
+    import AddLine from "@/component/add-line";
 
     export default {
         name: 'main-container',
-        components: {MainList, MainSetting, MdSider, MdHeader},
+        components: {AddLine, MainList, MainSetting, MdSider, MdHeader},
         data() {
             return {
                 items: [1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -56,7 +58,6 @@
                 selectedCatalog: null,
                 drawer: null,
                 device: null,
-                mat: null,
                 toast: {
                     open: false,
                     color: 'secondary',
@@ -101,7 +102,7 @@
                 io.save(prop[0], storgae.data);
             },
             saveTodoListChange(prop, value) {
-                this.$store.dispatch('saveTodoListChange',{ prop,value })
+                this.$store.dispatch('saveTodoListChange', {prop, value})
             },
             saveHeaderChange(prop, value) {
                 prop.unshift('title');
@@ -149,11 +150,11 @@
                 let list = this.todoList.slice();
 
                 for (let i = itm.index; i < this.todoList.length - 1; i++) {
-                    list[i] = list[i+1];
+                    list[i] = list[i + 1];
                     list[i].index--;
                 }
                 list.pop();
-                this.$store.dispatch('saveTodoListChange',{
+                this.$store.dispatch('saveTodoListChange', {
                     prop: [],
                     value: list,
                     ext: ['index']
@@ -217,19 +218,17 @@
                 this.device.onKeyboardShow(e.keyboardHeight);
             },
             keyboardHide(e) {
-                this.mat.style.height = '0';
+                // this.device.onKeyboardHide();
+                this.$refs.edit.$el.style.marginBottom = '0';
             },
             eKeyBoard(elm, body) {
                 body = body.$el;
-                console.log('capture focus', elm);
+                console.log('capture focus', elm, body);
                 if (this.device) this.device.onKeyboardShow = height => {
-                    this.mat.style.height = height + 'px';
-                    if (body.lastChild !== this.mat) body.appendChild(this.mat);
-                    window.scrollTo(body.scrollWidth, body.scrollHeight);
+                    this.$refs.edit.$el.style.marginBottom = height + 'px';
                 }
             },
             collapsedSider() {
-                console.log('click open side menu');
                 let now = this.$refs.drawer.sider_open;
                 let isPad = window.innerWidth > 1023;
                 this.$refs.drawer.sider_open = !now;
@@ -247,8 +246,6 @@
         mounted() {
             this.$store.commit('setSync', this);
             this.sync = new Sync(this);
-            this.mat = document.createElement('div');
-            this.mat.style.width = '100%';
             io.fetchObj(localconfig.dbname.side_list).then(ret => {
                 let li;
                 if (ret === null)
@@ -285,10 +282,12 @@
     .fade-enter-active {
         transition: opacity .3s ease;
     }
+
     .fade-leave-active {
         transition: opacity .15s ease;
     }
-    .fade-enter, .fade-leave-to{
+
+    .fade-enter, .fade-leave-to {
         pointer-events: none;
         opacity: 0;
     }

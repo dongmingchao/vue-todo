@@ -4,4 +4,4 @@ rm -rf $workspace/dist
 cp platforms/android/* dist/
 cp -r dist $workspace/dist
 cd $workspace
-cordova build
+cordova run

@@ -40,7 +40,7 @@
                     <div class="mdui-list-item-content" style="margin-left: 0" @click="createNewTodo">
                         <div class="mdui-list-item-title" v-show="!create">添加新的待做事项</div>
                         <div class="mdui-textfield" v-show="create">
-                            <input class="mdui-textfield-input" @keydown.enter="addTodo" @blur="addTodo"
+                            <input class="mdui-textfield-input" @keydown.enter="addTodo"
                                    id="newTodoArea"
                                    placeholder="标题"/>
                         </div>

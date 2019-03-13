@@ -43,8 +43,7 @@
                             {{item.edit?null:item.label}}
                             <div class="mdui-textfield" style="padding: 0" v-show="item.edit">
                                 <input class="mdui-textfield-input"
-                                       @keydown.stop.enter="addCatalogFinish"
-                                       @blur.stop="addCatalogFinish"
+                                       @keydown.enter="addCatalogFinish"
                                        ref="input"
                                        placeholder="标题"/>
                             </div>
@@ -122,6 +121,7 @@
                 }
             },
             changeCatalog(item, locate) {
+                if (item.edit) return;
                 if (window.innerWidth < 1024) this.sider_open = false;
                 this.$emit('changeCatalog', item, locate);
             },
@@ -158,7 +158,7 @@
             },
             addCatalogFinish(e) {
                 let value = e.target.value;
-                if (value === 'undefined') return;
+                if (this.create === null) return;
                 if (value === '') {
                     this.list[1].children.pop();
                     return;
@@ -167,9 +167,10 @@
                 this.create.body.label = value;
                 this.create.body.date = new Date().toJSON();
                 this.create.body.prop = value + '|' + this.create.body.date;
-                e.target.value = undefined;
                 this.$forceUpdate();
                 this.$emit('createCatalog', this.create.body);
+                e.target.value = '';
+                this.create = null;
             },
             delete_catalog() {
                 let li = this.list[this.trigger_.parentIndex].children;
